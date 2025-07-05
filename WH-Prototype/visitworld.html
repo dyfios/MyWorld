@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visit World</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="logo.png" alt="Logo" style="height:40px;">
+      </a>
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Explore</a></li>
+        <li class="nav-item"><a class="nav-link" href="myworlds.html">Create</a></li>
+      </ul>
+      <div class="d-flex align-items-center">
+        <button class="btn btn-outline-secondary me-3" id="themeToggle">🌙</button>
+        <div class="dropdown">
+          <button class="btn btn-light rounded-circle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="user-icon.png" alt="User Icon" style="height:40px;">
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+            <li><a class="dropdown-item" href="#">My Account</a></li>
+            <li><a class="dropdown-item" href="#">Appearance</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- World Visit Content -->
+  <div class="container-fluid mt-4">
+    <!-- World Title -->
+    <div class="row">
+      <div class="col-12">
+        <h1 id="worldTitle" class="text-center mb-4">World Name</h1>
+      </div>
+    </div>
+    
+    <!-- IFrame and Toolbar -->
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10">
+        <!-- IFrame -->
+        <div class="world-iframe-container mb-0">
+          <iframe id="worldIframe" src="about:blank" class="world-iframe" frameborder="0"></iframe>
+        </div>
+        
+        <!-- Toolbar -->
+        <div class="world-toolbar">
+          <span class="toolbar-label">WebVerse Lite</span>
+          <button class="btn btn-outline-secondary btn-sm" id="fullscreenBtn" onclick="toggleFullscreen()">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Link and Upload Section -->
+    <div class="row justify-content-center mt-4">
+      <div class="col-12 col-lg-10">
+        <!-- Try WebVerse Link -->
+        <div class="text-center mb-4">
+          <a href="#" class="text-decoration-none">Try WebVerse on your PC</a>
+        </div>
+        
+        <!-- Upload Entities Section -->
+        <div class="accordion" id="uploadAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="uploadHeading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#uploadCollapse" aria-expanded="false" aria-controls="uploadCollapse">
+                Upload Entities
+              </button>
+            </h2>
+            <div id="uploadCollapse" class="accordion-collapse collapse" aria-labelledby="uploadHeading" data-bs-parent="#uploadAccordion">
+              <div class="accordion-body">
+                <div class="row">
+                  <div class="col-12 col-md-6">
+                    <!-- File Picker -->
+                    <div class="mb-3">
+                      <label for="fileInput" class="form-label">File</label>
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="filePathDisplay" readonly placeholder="No file selected">
+                        <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('fileInput').click()">...</button>
+                        <input type="file" id="fileInput" style="display: none;" onchange="updateFilePath()">
+                      </div>
+                    </div>
+                    
+                    <!-- Name Field -->
+                    <div class="mb-3">
+                      <label for="entityName" class="form-label">Name</label>
+                      <input type="text" class="form-control" id="entityName" placeholder="Enter entity name">
+                    </div>
+                    
+                    <!-- Create Button -->
+                    <div class="mb-3">
+                      <button type="button" class="btn btn-primary" onclick="createEntity()">Create</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="scripts.js"></script>
+  <script src="visitworld.js"></script>
+</body>
+</html>
