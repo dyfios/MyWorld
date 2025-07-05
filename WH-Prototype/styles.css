@@ -1,0 +1,78 @@
+/* General Styling */
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+body.dark-mode a {
+  color: #bb86fc;
+}
+
+/* Larger Buttons */
+.large-button {
+  width: 120px; /* Increased width */
+  height: 120px; /* Increased height */
+  font-size: 2.5rem; /* Increased font size for visibility */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.large-button:hover {
+  transform: scale(1.1);
+}
+
+/* Search Bar */
+.search-bar {
+  font-size: 1.5rem;
+}
+
+/* Arrow Buttons */
+.arrow-btn {
+  font-size: 3rem; /* Larger size */
+  font-weight: bold;
+  border: none;
+  background-color: transparent;
+  color: black;
+  padding: 15px; /* Adjust padding */
+  transition: background-color 0.3s, color 0.3s, transform 0.2s;
+  cursor: pointer;
+}
+
+body.dark-mode .arrow-btn {
+  color: white; /* White color for dark mode */
+}
+
+.arrow-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  transform: scale(1.1);
+}
+  
+  /* Displaying World Info */
+  .world-info {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    width: 200px;
+  }
+  
+  .world-info img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  
+  /* Scroll Container */
+  .scroll-container {
+    display: flex;
+    overflow: hidden; /* Hide scrollbars */
+    width: 100%; /* Ensure full width */
+  }
