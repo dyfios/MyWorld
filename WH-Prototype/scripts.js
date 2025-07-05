@@ -44,7 +44,8 @@ function showWorldInfo(button) {console.log("hey");
         <h4>World ${worldId}</h4>
         <p>This is a description of World ${worldId}. It's a fascinating place!</p>
         <button class="btn btn-primary">More...</button>
-        <button class="btn btn-success">Join</button>
+        <button class="btn btn-success" onclick="visitWorldFromInfo('${worldId}')">Visit</button>
+        <button class="btn btn-secondary">Join</button>
       </div>
     `;
   
@@ -87,6 +88,9 @@ function showWorldInfo(button) {console.log("hey");
 function showWorldPanel(button) {
   const worldId = button.getAttribute("data-world-id");
   const worldTitle = button.getAttribute("title");
+  
+  // Store current world info for visit function
+  window.currentWorldInfo = { worldId, worldTitle };
   
   // Populate modal content
   document.getElementById('worldTitle').value = worldTitle;
@@ -252,3 +256,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// Visit World Functions
+function visitWorld() {
+  if (window.currentWorldInfo) {
+    const { worldId, worldTitle } = window.currentWorldInfo;
+    const visitUrl = `visitworld.html?worldId=${encodeURIComponent(worldId)}&worldName=${encodeURIComponent(worldTitle)}`;
+    window.open(visitUrl, '_blank');
+  }
+}
+
+function visitNewWorld() {
+  // Get the newly created world URL
+  const worldUrl = document.getElementById('newWorldUrl').value;
+  const worldId = worldUrl.split('/').pop(); // Extract world ID from URL
+  const worldName = 'New World'; // Default name for new worlds
+  
+  const visitUrl = `visitworld.html?worldId=${encodeURIComponent(worldId)}&worldName=${encodeURIComponent(worldName)}`;
+  window.open(visitUrl, '_blank');
+}
+
+function visitWorldFromInfo(worldId) {
+  const worldName = `World ${worldId}`;
+  const visitUrl = `visitworld.html?worldId=${encodeURIComponent(worldId)}&worldName=${encodeURIComponent(worldName)}`;
+  window.open(visitUrl, '_blank');
+}

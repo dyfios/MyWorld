@@ -76,3 +76,49 @@ body.dark-mode .arrow-btn {
     overflow: hidden; /* Hide scrollbars */
     width: 100%; /* Ensure full width */
   }
+
+  /* World Visit Page Styles */
+  .world-iframe-container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+  }
+
+  .world-iframe {
+    width: 100%;
+    height: 100%;
+  }
+
+  .world-toolbar {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+
+  .toolbar-label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #495057;
+  }
+
+  body.dark-mode .world-toolbar {
+    background: #343a40;
+    border-color: #495057;
+  }
+
+  body.dark-mode .toolbar-label {
+    color: #dee2e6;
+  }
+
+  body.dark-mode .world-iframe-container {
+    border-color: #495057;
+  }
