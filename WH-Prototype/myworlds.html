@@ -40,7 +40,7 @@
       <button class="btn btn-secondary large-button mx-2 my-2" data-world-id="1" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="World 1"></button>
       <button class="btn btn-secondary large-button mx-2 my-2" data-world-id="2" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="World 2"></button>
       <!-- Create World Button -->
-      <button class="btn btn-primary large-button mx-2 my-2" data-bs-toggle="tooltip" title="Create World">+</button>
+      <button class="btn btn-primary large-button mx-2 my-2" onclick="showCreateWorldPanel()" data-bs-toggle="tooltip" title="Create World">+</button>
     </div>
   </div>
   
@@ -70,6 +70,55 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Create World Modal -->
+  <div class="modal fade" id="createWorldModal" tabindex="-1" aria-labelledby="createWorldModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createWorldModalLabel">Create New World</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="templateSelect" class="form-label">Template</label>
+                <select class="form-select" id="templateSelect">
+                  <option value="">Select a template...</option>
+                  <option value="blank">Blank World</option>
+                  <option value="forest">Forest World</option>
+                  <option value="city">City World</option>
+                  <option value="desert">Desert World</option>
+                  <option value="ocean">Ocean World</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="worldName" class="form-label">World Name</label>
+                <input type="text" class="form-control" id="worldName" placeholder="Enter world name">
+              </div>
+              <div class="mb-3">
+                <button type="button" class="btn btn-success" onclick="createWorld()">Create</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Preview</label>
+                <div class="border rounded p-3 text-center" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                  <img id="templateThumbnail" src="" alt="Template Preview" class="img-fluid rounded" style="max-width: 100%; max-height: 100%; display: none;">
+                  <div id="thumbnailPlaceholder" class="text-muted">
+                    <i class="fas fa-image" style="font-size: 3rem;"></i>
+                    <br>
+                    Select a template to see preview
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
