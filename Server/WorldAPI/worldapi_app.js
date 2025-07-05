@@ -316,6 +316,33 @@ function ConnectToVOS(context) {
 
                 res.status(200).json({result: deserialized["result"]});
             }
+            else if (topic == "vos/app/wapi/res/listworlds") {
+                if (msg == null) {
+                    context.vosApp.Log("No content received for listworlds response.");
+                    return;
+                }
+
+                deserialized = JSON.parse(msg);
+
+                correlationId = deserialized["correlationid"];
+
+                if (correlationId == null) {
+                    context.vosApp.Log("No correlationID received for listworlds response.");
+                    return;
+                }
+
+                const res = pendingResponses.get(correlationId);
+                pendingResponses.delete(correlationId);
+                if (!res) return; // might've timed out or been handled already
+
+                if (deserialized["worlds"] == null) {
+                    res.status(500).json(deserialized);
+                    context.vosApp.Log("Missing required field worlds in listworlds response.");
+                    return;
+                }
+
+                res.status(200).json({worlds: deserialized["worlds"]});
+            }
             else if (topic == "vos/app/wapi/res/createentitytemplate") {
                 if (msg == null) {
                     context.vosApp.Log("No content received for createentitytemplate response.");
@@ -607,6 +634,28 @@ app.get("/list-entity-templates", (req, res) => {
         "replytopic": "vos/app/wapi/res/listentitytemplates",
         "correlationid": correlationId,
         "worldid": req.query["world-id"],
+        "userid": req.query["user-id"],
+        "usertoken": req.query["user-token"]
+    }));
+    setTimeout(() => {
+        if (pendingResponses.has(correlationId)) {
+            pendingResponses.get(correlationId).status(504).json({ error: "Timeout waiting for response" });
+            pendingResponses.delete(correlationId);
+        }
+    }, 10000); // 10s timeout
+});
+
+// GET /list-worlds
+app.get("/list-worlds", (req, res) => {
+    if (req.query == null || req.query["user-id"] == null || req.query["user-id"] == "" ||
+        req.query["user-token"] == null || req.query["user-token"] == "") {
+        return res.status(400).json({ error: `Missing or invalid params` });
+    }
+    const correlationId = uuidv4();
+    pendingResponses.set(correlationId, res);
+    this.vosApp.PublishOnVOS("vos/app/world/listworlds", JSON.stringify({
+        "replytopic": "vos/app/wapi/res/listworlds",
+        "correlationid": correlationId,
         "userid": req.query["user-id"],
         "usertoken": req.query["user-token"]
     }));
