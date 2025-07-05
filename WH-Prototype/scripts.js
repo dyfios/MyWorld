@@ -1,3 +1,8 @@
+// API Configuration
+const API_BASE_URL = 'http://localhost:4000';
+const PLACEHOLDER_USER_ID = 'user-placeholder';
+const PLACEHOLDER_USER_TOKEN = 'token-placeholder';
+
 const themeToggle = document.getElementById('themeToggle');
 const header = document.getElementById('header');
 const body = document.body;
@@ -87,15 +92,16 @@ function showWorldInfo(button) {console.log("hey");
 // World Panel Modal Functions (for myworlds.html)
 function showWorldPanel(button) {
   const worldId = button.getAttribute("data-world-id");
-  const worldTitle = button.getAttribute("title");
+  const worldName = button.getAttribute("data-world-name") || button.getAttribute("title");
+  const worldDescription = button.getAttribute("data-world-description") || '';
   
   // Store current world info for visit function
-  window.currentWorldInfo = { worldId, worldTitle };
+  window.currentWorldInfo = { worldId, worldTitle: worldName };
   
   // Populate modal content
-  document.getElementById('worldTitle').value = worldTitle;
+  document.getElementById('worldTitle').value = worldName;
   document.getElementById('worldThumbnail').src = `world-${worldId}.jpg`;
-  document.getElementById('worldThumbnail').alt = `${worldTitle} Thumbnail`;
+  document.getElementById('worldThumbnail').alt = `${worldName} Thumbnail`;
   document.getElementById('worldUrl').value = `https://myworld.com/world/${worldId}`;
   
   // Show the modal
@@ -134,6 +140,7 @@ function showCreateWorldPanel() {
   // Reset form
   document.getElementById('templateSelect').value = '';
   document.getElementById('worldName').value = '';
+  document.getElementById('worldDescription').value = '';
   document.getElementById('templateThumbnail').style.display = 'none';
   document.getElementById('thumbnailPlaceholder').style.display = 'block';
   
@@ -142,9 +149,10 @@ function showCreateWorldPanel() {
   modal.show();
 }
 
-function createWorld() {
+async function createWorld() {
   const template = document.getElementById('templateSelect').value;
   const worldName = document.getElementById('worldName').value;
+  const worldDescription = document.getElementById('worldDescription').value;
   
   if (!template) {
     alert('Please select a template');
@@ -156,19 +164,58 @@ function createWorld() {
     return;
   }
   
-  // Here you would typically send the data to your backend
-  console.log('Creating world:', { template, worldName });
+  if (!worldDescription.trim()) {
+    alert('Please enter a world description');
+    return;
+  }
   
-  // Generate a unique world ID and URL
-  const worldId = generateWorldId();
-  const worldUrl = `https://myworld.com/world/${worldId}`;
+  const createButton = document.querySelector('#createWorldModal .btn-success');
+  createButton.disabled = true;
+  createButton.textContent = 'Creating...';
   
-  // Populate the new world modal
-  document.getElementById('newWorldUrl').value = worldUrl;
-  
-  // Show the new world modal
-  const newWorldModal = new bootstrap.Modal(document.getElementById('newWorldModal'));
-  newWorldModal.show();
+  try {
+    // Send POST request to create world
+    const response = await fetch(`${API_BASE_URL}/create-world`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: worldName,
+        description: worldDescription,
+        owner: PLACEHOLDER_USER_ID,
+        permissions: 'public', // Default permissions
+        'user-id': PLACEHOLDER_USER_ID,
+        'user-token': PLACEHOLDER_USER_TOKEN,
+        template: template // Template parameter as mentioned in the issue
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.worldid) {
+      // Generate world URL using the returned world ID
+      const worldUrl = `https://myworld.com/world/${result.worldid}`;
+      
+      // Populate the new world modal
+      document.getElementById('newWorldUrl').value = worldUrl;
+      
+      // Show the new world modal
+      const newWorldModal = new bootstrap.Modal(document.getElementById('newWorldModal'));
+      newWorldModal.show();
+      
+      // Refresh the world list
+      loadWorldsFromAPI();
+    } else {
+      alert(`Error creating world: ${result.error || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error('Error creating world:', error);
+    alert('Error creating world. Please check the console for details.');
+  } finally {
+    createButton.disabled = false;
+    createButton.textContent = 'Create';
+  }
 }
 
 // Generate a unique world ID (simple implementation for demo)
@@ -238,6 +285,11 @@ function closeCreateWorldModal() {
 
 // Template selection handler
 document.addEventListener('DOMContentLoaded', function() {
+  // Load worlds from API if on myworlds page
+  if (window.location.pathname.includes('myworlds.html')) {
+    loadWorldsFromAPI();
+  }
+  
   const templateSelect = document.getElementById('templateSelect');
   if (templateSelect) {
     templateSelect.addEventListener('change', function() {
@@ -256,6 +308,48 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// Load worlds from API
+async function loadWorldsFromAPI() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/list-worlds?user-id=${PLACEHOLDER_USER_ID}&user-token=${PLACEHOLDER_USER_TOKEN}`);
+    const result = await response.json();
+    
+    if (response.ok && result.worlds) {
+      populateWorldButtons(result.worlds);
+    } else {
+      console.error('Error loading worlds:', result.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Error loading worlds:', error);
+  }
+}
+
+// Populate world buttons based on API data
+function populateWorldButtons(worlds) {
+  const worldsContainer = document.querySelector('.container .d-flex');
+  if (!worldsContainer) return;
+  
+  // Clear existing world buttons (keep the + button)
+  const existingButtons = worldsContainer.querySelectorAll('.btn-secondary');
+  existingButtons.forEach(button => button.remove());
+  
+  // Add world buttons
+  worlds.forEach((world, index) => {
+    const button = document.createElement('button');
+    button.className = 'btn btn-secondary large-button mx-2 my-2';
+    button.setAttribute('data-world-id', world.id || `world-${index + 1}`);
+    button.setAttribute('data-world-name', world.name || `World ${index + 1}`);
+    button.setAttribute('data-world-description', world.description || '');
+    button.setAttribute('data-bs-toggle', 'tooltip');
+    button.setAttribute('title', world.name || `World ${index + 1}`);
+    button.onclick = function() { showWorldPanel(this); };
+    
+    // Insert before the + button
+    const createButton = worldsContainer.querySelector('.btn-primary');
+    worldsContainer.insertBefore(button, createButton);
+  });
+}
 
 // Visit World Functions
 function visitWorld() {
