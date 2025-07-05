@@ -154,11 +154,82 @@ function createWorld() {
   
   // Here you would typically send the data to your backend
   console.log('Creating world:', { template, worldName });
-  alert(`World "${worldName}" created successfully!`);
   
-  // Close the modal
-  const modal = bootstrap.Modal.getInstance(document.getElementById('createWorldModal'));
-  modal.hide();
+  // Generate a unique world ID and URL
+  const worldId = generateWorldId();
+  const worldUrl = `https://myworld.com/world/${worldId}`;
+  
+  // Populate the new world modal
+  document.getElementById('newWorldUrl').value = worldUrl;
+  
+  // Show the new world modal
+  const newWorldModal = new bootstrap.Modal(document.getElementById('newWorldModal'));
+  newWorldModal.show();
+}
+
+// Generate a unique world ID (simple implementation for demo)
+function generateWorldId() {
+  return 'world_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Copy the new world URL to clipboard
+function copyNewWorldUrl() {
+  const urlField = document.getElementById('newWorldUrl');
+  urlField.select();
+  urlField.setSelectionRange(0, 99999); // For mobile devices
+  
+  // Copy to clipboard
+  navigator.clipboard.writeText(urlField.value).then(() => {
+    // Change button text temporarily to show success
+    const copyBtn = document.getElementById('copyNewWorldUrlBtn');
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = 'Copied!';
+    copyBtn.classList.remove('btn-outline-secondary');
+    copyBtn.classList.add('btn-success');
+    
+    setTimeout(() => {
+      copyBtn.textContent = originalText;
+      copyBtn.classList.remove('btn-success');
+      copyBtn.classList.add('btn-outline-secondary');
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy URL: ', err);
+    // Fallback for older browsers
+    document.execCommand('copy');
+  });
+}
+
+// Close both modals when Ok is clicked
+function closeAllModals() {
+  // Use a timeout to ensure the new modal is fully displayed before closing
+  setTimeout(() => {
+    // Close the new world modal first
+    const newWorldModalEl = document.getElementById('newWorldModal');
+    const newWorldModal = bootstrap.Modal.getInstance(newWorldModalEl) || new bootstrap.Modal(newWorldModalEl);
+    newWorldModal.hide();
+    
+    // Close the create world modal after a short delay
+    setTimeout(() => {
+      const createWorldModalEl = document.getElementById('createWorldModal');
+      const createWorldModal = bootstrap.Modal.getInstance(createWorldModalEl) || new bootstrap.Modal(createWorldModalEl);
+      createWorldModal.hide();
+    }, 300);
+  }, 100);
+}
+
+// Close the create world modal (called after new world modal is closed)
+function closeCreateWorldModal() {
+  // Wait for the new world modal to close, then close the create world modal
+  const newWorldModal = document.getElementById('newWorldModal');
+  
+  // Listen for the new world modal to be completely hidden
+  newWorldModal.addEventListener('hidden.bs.modal', function() {
+    const createWorldModalEl = document.getElementById('createWorldModal');
+    const createWorldModal = bootstrap.Modal.getInstance(createWorldModalEl);
+    if (createWorldModal) {
+      createWorldModal.hide();
+    }
+  }, { once: true }); // Use once: true to ensure this only runs once
 }
 
 // Template selection handler
