@@ -1,0 +1,17 @@
+{
+    "server-name": "MetaWorld",
+    "bus-port": 5525,
+    "startup-apps": [
+        {
+            "name": "World Manager",
+            "command": "node",
+            "args": [ "./WorldManager/worldmanager_app.js" ]
+        },
+        {
+            "name": "World API",
+            "command": "node",
+            "args": [ "./WorldAPI/worldapi_app.js" ]
+        }
+    ],
+    "message-triggered-apps": []
+}
