@@ -124,3 +124,60 @@ function copyWorldUrl() {
     document.execCommand('copy');
   });
 }
+
+// Create World Modal Functions
+function showCreateWorldPanel() {
+  // Reset form
+  document.getElementById('templateSelect').value = '';
+  document.getElementById('worldName').value = '';
+  document.getElementById('templateThumbnail').style.display = 'none';
+  document.getElementById('thumbnailPlaceholder').style.display = 'block';
+  
+  // Show the modal
+  const modal = new bootstrap.Modal(document.getElementById('createWorldModal'));
+  modal.show();
+}
+
+function createWorld() {
+  const template = document.getElementById('templateSelect').value;
+  const worldName = document.getElementById('worldName').value;
+  
+  if (!template) {
+    alert('Please select a template');
+    return;
+  }
+  
+  if (!worldName.trim()) {
+    alert('Please enter a world name');
+    return;
+  }
+  
+  // Here you would typically send the data to your backend
+  console.log('Creating world:', { template, worldName });
+  alert(`World "${worldName}" created successfully!`);
+  
+  // Close the modal
+  const modal = bootstrap.Modal.getInstance(document.getElementById('createWorldModal'));
+  modal.hide();
+}
+
+// Template selection handler
+document.addEventListener('DOMContentLoaded', function() {
+  const templateSelect = document.getElementById('templateSelect');
+  if (templateSelect) {
+    templateSelect.addEventListener('change', function() {
+      const template = this.value;
+      const thumbnail = document.getElementById('templateThumbnail');
+      const placeholder = document.getElementById('thumbnailPlaceholder');
+      
+      if (template) {
+        thumbnail.src = `template-${template}.jpg`;
+        thumbnail.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        thumbnail.style.display = 'none';
+        placeholder.style.display = 'block';
+      }
+    });
+  }
+});
