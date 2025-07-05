@@ -37,12 +37,44 @@
     <h1>My Worlds</h1>
     <div class="d-flex flex-wrap">
       <!-- World Buttons -->
-      <button class="btn btn-secondary large-button mx-2 my-2" data-bs-toggle="tooltip" title="World 1"></button>
-      <button class="btn btn-secondary large-button mx-2 my-2" data-bs-toggle="tooltip" title="World 2"></button>
+      <button class="btn btn-secondary large-button mx-2 my-2" data-world-id="1" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="World 1"></button>
+      <button class="btn btn-secondary large-button mx-2 my-2" data-world-id="2" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="World 2"></button>
       <!-- Create World Button -->
       <button class="btn btn-primary large-button mx-2 my-2" data-bs-toggle="tooltip" title="Create World">+</button>
     </div>
   </div>
+  
+  <!-- World Details Modal -->
+  <div class="modal fade" id="worldModal" tabindex="-1" aria-labelledby="worldModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="worldModalLabel">World Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="worldTitle" class="form-label">World Title</label>
+            <input type="text" class="form-control" id="worldTitle" readonly>
+          </div>
+          <div class="mb-3 text-center">
+            <img id="worldThumbnail" src="" alt="World Thumbnail" class="img-fluid rounded" style="max-width: 100%; height: auto;">
+          </div>
+          <div class="mb-3">
+            <label for="worldUrl" class="form-label">World URL</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="worldUrl" readonly>
+              <button class="btn btn-outline-secondary" type="button" id="copyUrlBtn" onclick="copyWorldUrl()">Copy</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="scripts.js"></script>
 </body>

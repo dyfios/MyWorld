@@ -82,3 +82,45 @@ function showWorldInfo(button) {console.log("hey");
       }
     }
   });
+
+// World Panel Modal Functions (for myworlds.html)
+function showWorldPanel(button) {
+  const worldId = button.getAttribute("data-world-id");
+  const worldTitle = button.getAttribute("title");
+  
+  // Populate modal content
+  document.getElementById('worldTitle').value = worldTitle;
+  document.getElementById('worldThumbnail').src = `world-${worldId}.jpg`;
+  document.getElementById('worldThumbnail').alt = `${worldTitle} Thumbnail`;
+  document.getElementById('worldUrl').value = `https://myworld.com/world/${worldId}`;
+  
+  // Show the modal
+  const modal = new bootstrap.Modal(document.getElementById('worldModal'));
+  modal.show();
+}
+
+function copyWorldUrl() {
+  const urlField = document.getElementById('worldUrl');
+  urlField.select();
+  urlField.setSelectionRange(0, 99999); // For mobile devices
+  
+  // Copy to clipboard
+  navigator.clipboard.writeText(urlField.value).then(() => {
+    // Change button text temporarily to show success
+    const copyBtn = document.getElementById('copyUrlBtn');
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = 'Copied!';
+    copyBtn.classList.remove('btn-outline-secondary');
+    copyBtn.classList.add('btn-success');
+    
+    setTimeout(() => {
+      copyBtn.textContent = originalText;
+      copyBtn.classList.remove('btn-success');
+      copyBtn.classList.add('btn-outline-secondary');
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy URL: ', err);
+    // Fallback for older browsers
+    document.execCommand('copy');
+  });
+}
