@@ -508,6 +508,37 @@ function ConnectToVOS(context) {
                             }));
                     });
             }
+            else if (topic == "vos/app/world/listworlds") {
+                if (msg == null) {
+                    context.vosApp.Log("No content received for listworlds message.");
+                    return;
+                }
+
+                deserialized = JSON.parse(msg);
+
+                if (deserialized["userid"] == null) {
+                    context.vosApp.Log("Missing required field userid in listworlds message.");
+                    return;
+                }
+
+                if (deserialized["usertoken"] == null) {
+                    context.vosApp.Log("Missing required field usertoken in listworlds message.");
+                    return;
+                }
+
+                if (deserialized["replytopic"] == null) {
+                    context.vosApp.Log("Missing required field replytopic in listworlds message.");
+                    return;
+                }
+
+                worldManager.listWorldsForUser(deserialized["userid"], deserialized["usertoken"], null, (worlds) => {
+                        context.vosApp.PublishOnVOS(deserialized["replytopic"],
+                            JSON.stringify({
+                                "correlationid": deserialized["correlationid"],
+                                "worlds": worlds
+                            }));
+                    });
+            }
             else {
                 context.vosApp.Log("Invalid VOS message topic: " + topic);
             }
