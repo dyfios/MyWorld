@@ -240,6 +240,56 @@ async function listEntityTemplates(worldId, onResult) {
     onResult(entityTemplates);
 }
 
+// 🌍 List worlds for a given user
+async function listWorldsForUser(userId, userToken, authCallback, onResult) {
+    try {
+        checkAuthorization(userId, userToken, authCallback, "list worlds");
+
+        if (!(await fs.pathExists(BASE_PATH))) {
+            console.log(`ℹ️ Worlds directory does not exist: ${BASE_PATH}`);
+            onResult([]);
+            return;
+        }
+
+        const worldFolders = await fs.readdir(BASE_PATH);
+        const worlds = [];
+
+        for (const worldId of worldFolders) {
+            const worldPath = path.join(BASE_PATH, worldId);
+            const dbPath = path.join(worldPath, "world.db");
+
+            // Skip if not a valid world directory
+            if (!(await fs.pathExists(dbPath))) continue;
+
+            try {
+                const metadata = await queryDatabase(worldId, "SELECT * FROM world_metadata LIMIT 1");
+                if (metadata && metadata.length > 0) {
+                    const worldData = metadata[0];
+                    // Include worlds where the user is the owner
+                    if (worldData.owner === userId) {
+                        worlds.push({
+                            id: worldData.id,
+                            name: worldData.name,
+                            description: worldData.description,
+                            owner: worldData.owner,
+                            permissions: worldData.permissions
+                        });
+                    }
+                }
+            } catch (dbError) {
+                console.error(`❌ Error reading metadata for world ${worldId}:`, dbError);
+                // Continue processing other worlds
+            }
+        }
+
+        console.log(`✅ Found ${worlds.length} worlds for user ${userId}`);
+        onResult(worlds);
+    } catch (error) {
+        console.error(`❌ Error listing worlds for user ${userId}:`, error);
+        onResult([]);
+    }
+}
+
 async function updateWorldMetadata(worldId, updateData, userId, userToken, authCallback, onResult) {
     checkAuthorization(userId, userToken, authCallback, "update world metadata");
     await updateDatabase(worldId, "world_metadata", updateData, "id");
@@ -327,6 +377,7 @@ module.exports = {
     listAssets,
     listEntityInstances,
     listEntityTemplates,
+    listWorldsForUser,
     updateWorldMetadata,
     createEntityTemplate,
     deleteEntityTemplate
