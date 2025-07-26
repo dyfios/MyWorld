@@ -11,6 +11,16 @@
             "name": "World API",
             "command": "node",
             "args": [ "./WorldAPI/worldapi_app.js" ]
+        },
+        {
+            "name": "WorldHub HTTP Server",
+            "command": "node",
+            "args": [ "./web_server/webserver.js", "8080", "../WH-Prototype" ]
+        },
+        {
+            "name": "Client Server",
+            "command": "node",
+            "args": [ "./web_server/webserver.js", "8081", "../MyWorldClient" ]
         }
     ],
     "message-triggered-apps": []

@@ -10,6 +10,9 @@ const body = document.body;
 let activeWorldInfo = null; // To track the active world-info panel
 let activeWorldInfoButton = null; // To track the active world-info button
 
+let userID = sessionStorage.getItem("WORLDHUB_ID_ID");
+let userToken = sessionStorage.getItem("WORLDHUB_ID_TOKEN");
+
 // Check for saved theme preference
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) {
@@ -37,7 +40,7 @@ themeToggle.addEventListener('click', () => {
   }
 });
 
-function showWorldInfo(button) {console.log("hey");
+function showWorldInfo(button) {
     restoreWorldButton();
     const container = button.parentElement; // Get the container div
     const worldId = button.getAttribute("data-world-id");
@@ -59,7 +62,7 @@ function showWorldInfo(button) {console.log("hey");
     activeWorldInfoButton = button;
   }
   
-  function restoreWorldButton() {console.log("yo");
+  function restoreWorldButton() {
     if (activeWorldInfo) {
       const { container, worldId } = activeWorldInfo;
   
@@ -183,10 +186,10 @@ async function createWorld() {
       body: JSON.stringify({
         name: worldName,
         description: worldDescription,
-        owner: PLACEHOLDER_USER_ID,
+        owner: userID,
         permissions: 'public', // Default permissions
-        'user-id': PLACEHOLDER_USER_ID,
-        'user-token': PLACEHOLDER_USER_TOKEN,
+        'user-id': userID,
+        'user-token': userToken,
         template: template // Template parameter as mentioned in the issue
       })
     });
@@ -312,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load worlds from API
 async function loadWorldsFromAPI() {
   try {
-    const response = await fetch(`${API_BASE_URL}/list-worlds?user-id=${PLACEHOLDER_USER_ID}&user-token=${PLACEHOLDER_USER_TOKEN}`);
+    const response = await fetch(`${API_BASE_URL}/list-worlds?user-id=${userID}&user-token=${userToken}`);
     const result = await response.json();
     
     if (response.ok && result.worlds) {

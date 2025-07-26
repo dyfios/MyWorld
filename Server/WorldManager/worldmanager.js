@@ -43,7 +43,7 @@ async function createWorld(name, description, owner, permissions, userId, userTo
             db.run(`
             CREATE TABLE IF NOT EXISTS entity_instances (
                 instanceid TEXT PRIMARY KEY, instancetag TEXT,
-                entity_id TEXT, variant_id TEXT,
+                entity_id TEXT, variant_id TEXT, entity_parent TEXT,
                 pos_x REAL, pos_y REAL, pos_z REAL,
                 rot_x REAL, rot_y REAL, rot_z REAL, rot_w REAL,
                 scl_x REAL, scl_y REAL, scl_z REAL,
@@ -164,6 +164,29 @@ async function removeAsset(worldId, filename, userId, userToken, authCallback, o
     }
 }
 
+async function getAsset(worldId, filename, userId, userToken, authCallback, onComplete) {
+    try {
+        //checkAuthorization(userId, userToken, authCallback, "get an asset");
+
+        const worldPath = path.join(BASE_PATH, worldId);
+        const assetPath = path.join(worldPath, "assets", filename);
+
+        if (!(await fs.pathExists(worldPath))) {
+            throw new Error(`World ${worldId} does not exist.`);
+        }
+
+        if (!await fs.pathExists(assetPath)) {
+            throw new Error(`Asset ${filename} does not exist in world ${worldId}.`);
+        }
+
+        const asset = await fs.readFile(assetPath);
+        onComplete(asset);
+    } catch (error) {
+        console.error(`❌ Error adding asset ${filename}:`, error);
+        onComplete(null);
+    }
+}
+
 // 📋 Entity Instance Management
 async function createEntityInstance(worldId, entityData, userId, userToken, authCallback, onComplete) {
     try {
@@ -171,7 +194,7 @@ async function createEntityInstance(worldId, entityData, userId, userToken, auth
 
         const newInstanceId = uuidv4();
         entityData["instanceid"] = newInstanceId;
-        const columns = ['instanceid', 'instancetag', 'entity_id', 'variant_id',
+        const columns = ['instanceid', 'instancetag', 'entity_id', 'variant_id', 'parent_id',
             'pos_x', 'pos_y', 'pos_z', 'rot_x', 'rot_y', 'rot_z', 'rot_w',
             'scl_x', 'scl_y', 'scl_z', 'state', 'owner',
             'owner_read', 'owner_write', 'owner_use', 'owner_take',
@@ -236,8 +259,58 @@ async function listEntityInstances(worldId, onResult) {
 }
 
 async function listEntityTemplates(worldId, onResult) {
-    const entityTemplates = queryDatabase(worldId, "SELECT * FROM entity_templates");
+    const entityTemplates = await queryDatabase(worldId, "SELECT * FROM entity_templates");
     onResult(entityTemplates);
+}
+
+// 🌍 List worlds for a given user
+async function listWorldsForUser(userId, userToken, authCallback, onResult) {
+    try {
+        checkAuthorization(userId, userToken, authCallback, "list worlds");
+
+        if (!(await fs.pathExists(BASE_PATH))) {
+            console.log(`ℹ️ Worlds directory does not exist: ${BASE_PATH}`);
+            onResult([]);
+            return;
+        }
+
+        const worldFolders = await fs.readdir(BASE_PATH);
+        const worlds = [];
+
+        for (const worldId of worldFolders) {
+            const worldPath = path.join(BASE_PATH, worldId);
+            const dbPath = path.join(worldPath, "world.db");
+
+            // Skip if not a valid world directory
+            if (!(await fs.pathExists(dbPath))) continue;
+
+            try {
+                const metadata = await queryDatabase(worldId, "SELECT * FROM world_metadata LIMIT 1");
+                if (metadata && metadata.length > 0) {
+                    const worldData = metadata[0];
+                    // Include worlds where the user is the owner
+                    if (worldData.owner === userId) {
+                        worlds.push({
+                            id: worldData.id,
+                            name: worldData.name,
+                            description: worldData.description,
+                            owner: worldData.owner,
+                            permissions: worldData.permissions
+                        });
+                    }
+                }
+            } catch (dbError) {
+                console.error(`❌ Error reading metadata for world ${worldId}:`, dbError);
+                // Continue processing other worlds
+            }
+        }
+
+        console.log(`✅ Found ${worlds.length} worlds for user ${userId}`);
+        onResult(worlds);
+    } catch (error) {
+        console.error(`❌ Error listing worlds for user ${userId}:`, error);
+        onResult([]);
+    }
 }
 
 async function updateWorldMetadata(worldId, updateData, userId, userToken, authCallback, onResult) {
@@ -322,11 +395,13 @@ module.exports = {
     copyWorld,
     addAsset,
     removeAsset,
+    getAsset,
     createEntityInstance,
     deleteEntityInstance,
     listAssets,
     listEntityInstances,
     listEntityTemplates,
+    listWorldsForUser,
     updateWorldMetadata,
     createEntityTemplate,
     deleteEntityTemplate

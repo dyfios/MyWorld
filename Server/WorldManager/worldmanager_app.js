@@ -291,7 +291,7 @@ function ConnectToVOS(context) {
                 deserialized = JSON.parse(msg);
 
                 if (deserialized["worldid"] == null) {
-                    context.vosApp.Log("Missing required field worldid in createentityinstance message.");
+                    context.vosApp.Log("Missing required field worldid in deleteentityinstance message.");
                     return;
                 }
 
@@ -301,12 +301,12 @@ function ConnectToVOS(context) {
                 }
 
                 if (deserialized["userid"] == null) {
-                    context.vosApp.Log("Missing required field userid in createentityinstance message.");
+                    context.vosApp.Log("Missing required field userid in deleteentityinstance message.");
                     return;
                 }
 
                 if (deserialized["usertoken"] == null) {
-                    context.vosApp.Log("Missing required field usertoken in createentityinstance message.");
+                    context.vosApp.Log("Missing required field usertoken in deleteentityinstance message.");
                     return;
                 }
 
@@ -505,6 +505,69 @@ function ConnectToVOS(context) {
                             JSON.stringify({
                                 "correlationid": deserialized["correlationid"],
                                 "result": result
+                            }));
+                    });
+            }
+            else if (topic == "vos/app/world/listworlds") {
+                if (msg == null) {
+                    context.vosApp.Log("No content received for listworlds message.");
+                    return;
+                }
+
+                deserialized = JSON.parse(msg);
+
+                if (deserialized["userid"] == null) {
+                    context.vosApp.Log("Missing required field userid in listworlds message.");
+                    return;
+                }
+
+                if (deserialized["usertoken"] == null) {
+                    context.vosApp.Log("Missing required field usertoken in listworlds message.");
+                    return;
+                }
+
+                if (deserialized["replytopic"] == null) {
+                    context.vosApp.Log("Missing required field replytopic in listworlds message.");
+                    return;
+                }
+
+                worldManager.listWorldsForUser(deserialized["userid"], deserialized["usertoken"], null, (worlds) => {
+                        context.vosApp.PublishOnVOS(deserialized["replytopic"],
+                            JSON.stringify({
+                                "correlationid": deserialized["correlationid"],
+                                "worlds": worlds
+                            }));
+                    });
+            }
+            else if (topic == "vos/app/world/getasset") {
+                if (msg == null) {
+                    context.vosApp.Log("No content received for getasset message.");
+                    return;
+                }
+
+                deserialized = JSON.parse(msg);
+
+                if (deserialized["worldid"] == null) {
+                    context.vosApp.Log("Missing required field worldid in listworlds message.");
+                    return;
+                }
+
+                if (deserialized["assetname"] == null) {
+                    context.vosApp.Log("Missing required field assetname in listworlds message.");
+                    return;
+                }
+
+                if (deserialized["replytopic"] == null) {
+                    context.vosApp.Log("Missing required field replytopic in listworlds message.");
+                    return;
+                }
+
+                worldManager.getAsset(deserialized["worldid"], deserialized["assetname"], null, null,
+                    null, (asset) => {
+                        context.vosApp.PublishOnVOS(deserialized["replytopic"],
+                            JSON.stringify({
+                                "correlationid": deserialized["correlationid"],
+                                "asset": asset
                             }));
                     });
             }

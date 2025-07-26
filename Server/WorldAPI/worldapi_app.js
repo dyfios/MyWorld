@@ -397,6 +397,33 @@ function ConnectToVOS(context) {
 
                 res.status(200).json({result: deserialized["result"]});
             }
+            else if (topic == "vos/app/wapi/res/getasset") {
+                if (msg == null) {
+                    context.vosApp.Log("No content received for getasset response.");
+                    return;
+                }
+
+                deserialized = JSON.parse(msg);
+
+                correlationId = deserialized["correlationid"];
+
+                if (correlationId == null) {
+                    context.vosApp.Log("No correlationID received for getasset response.");
+                    return;
+                }
+
+                const res = pendingResponses.get(correlationId);
+                pendingResponses.delete(correlationId);
+                if (!res) return; // might’ve timed out or been handled already
+
+                if (deserialized["asset"] == null) {
+                    res.status(500).json(deserialized);
+                    context.vosApp.Log("Missing required field asset in getasset response.");
+                    return;
+                }
+
+                res.status(200).send(Buffer.from(deserialized["asset"]));
+            }
             else {
                 context.vosApp.Log("Invalid VOS message topic: " + topic);
             }
@@ -727,6 +754,29 @@ app.delete("/delete-entity-template", (req, res) => {
         "entityid": req.body["entity-id"],
         "userid": req.body["user-id"],
         "usertoken": req.body["user-token"]
+    }));
+    setTimeout(() => {
+        if (pendingResponses.has(correlationId)) {
+            pendingResponses.get(correlationId).status(504).json({ error: "Timeout waiting for response" });
+            pendingResponses.delete(correlationId);
+        }
+    }, 10000); // 10s timeout
+});
+
+app.get("/get-asset/*param0", (req, res) => {
+    const assetPath = req.params.param0;
+
+    if (assetPath.length != 2) {
+        return res.status(400).json({ error: "Invalid request." });
+    }
+
+    const correlationId = uuidv4();
+    pendingResponses.set(correlationId, res);
+    this.vosApp.PublishOnVOS("vos/app/world/getasset", JSON.stringify({
+        "replytopic": "vos/app/wapi/res/getasset",
+        "correlationid": correlationId,
+        "worldid": assetPath[0],
+        "assetname": assetPath[1]
     }));
     setTimeout(() => {
         if (pendingResponses.has(correlationId)) {
