@@ -106,7 +106,7 @@ function HandleQueryParams() {
     //token = World.GetQueryParam("token");
     var rawWorldMetadata = World.GetQueryParam("world_metadata");
     if (rawWorldMetadata != null) {
-        worldMetadata = JSON.parse(rawWorldMetadata);
+        worldMetadata = JSON.parse(rawWorldMetadata.replace("&quot;", "\""));
     }
     worldsServer = World.GetQueryParam("worlds_server");
     topLevelContext.worldsServer = worldsServer;
@@ -115,12 +115,18 @@ function HandleQueryParams() {
 }
 
 function InitializeModules() {
+    var tlc = Context.GetContext("MW_TOP_LEVEL_CONTEXT");
+    if (tlc == null) {
+        Logging.LogError("MW_TOP_LEVEL_CONTEXT not found. Cannot handle user login message.");
+        return;
+    }
+
     configurationModule = new ConfigurationModule(worldURI, PerformPostWorldConfigLoadActions);
     entityModule = new EntityModule();
     identityModule = new IdentityModule(userID, userTag, token);
     inputModule = new InputModule();
     playerModule = new PlayerModule(userTag, startPos, interfaceMode,
-        thirdPersonCharacterModel, thirdPersonCharacterOffset,
+        tlc.thirdPersonCharacterModel, thirdPersonCharacterOffset,
         thirdPersonCharacterRotation, thirdPersonCharacterLabelOffset);
     restModule = new RESTModule();
     scriptModule = new ScriptModule();
@@ -128,15 +134,10 @@ function InitializeModules() {
     uiModule = new UIModule(runtimeMode);
     worldRenderingModule = new WorldRenderingModule(worldStartPos);
 
-    var mwTopLevelContext = Context.GetContext("MW_TOP_LEVEL_CONTEXT");
-    if (mwTopLevelContext == null) {
-        Logging.LogError("MW_TOP_LEVEL_CONTEXT not found. Cannot handle user login message.");
-        return;
-    }
-
     MW_REST_SendGetEntityTemplatesRequest(worldsServer, worldMetadata.id,
-        mwTopLevelContext.userID, mwTopLevelContext.token, "ProcessEntityTemplates");
+        tlc.userID, tlc.token, "ProcessEntityTemplates");
 
+    MW_UI_SetUpEditToolbar();
     //GetWorldConfiguration();
 }
 
@@ -157,9 +158,9 @@ function ProcessEntityTemplates(entityTemplates) {
         mwTopLevelContext.userID, mwTopLevelContext.token, "ProcessEntityInstances")
 }
 
-function ProcessEntityInstances(entityInstances) {
+function ProcessEntityInstances(entityInstances) {Logging.Log(entityInstances);
     var eIObjects = JSON.parse(entityInstances);
-    
+    Logging.Log(eIObjects);
     for (let i = 0; i < eIObjects["assets"].length; i++) {
         var instance = eIObjects["assets"][i];
         var pos = new Vector3(instance["pos_x"], instance["pos_y"], instance["pos_z"]);
@@ -180,7 +181,7 @@ function GetWorldConfiguration() {
 
 function PerformPostWorldConfigLoadActions() {
     Logging.Log("Performing Post World Config Load Actions...");
-    MW_UI_SetUpEditToolbar()
+    MW_UI_SetUpEditToolbar();
 }
 
 function PerformPostSynchronizerConnectActions() {
@@ -254,7 +255,7 @@ function HandleUserLoginMessage(msg) {
         var loginCanvas = Entity.Get(WorldStorage.GetItem("LOGIN-CANVAS-ID"));
         loginCanvas.SetInteractionState(InteractionState.Hidden);
 
-        InitializeModules();
+        GetUserAvatar();
     }
 }
 
@@ -281,6 +282,35 @@ function StartUserLogin() {
         Vector3.one, false, WorldStorage.GetItem("LOGIN-CANVAS-ID"), "LoginCanvas", "FinishLoginCanvasSetup");
     
     Context.DefineContext("LOGIN_CONTEXT", loginContext);
+}
+
+function OnUserAvatarInfoReceived(avatarInfo) {
+    var tlc = Context.GetContext("MW_TOP_LEVEL_CONTEXT");
+    if (tlc == null) {
+        Logging.LogError("MW_TOP_LEVEL_CONTEXT not found. Cannot process user avatar.");
+        return;
+    }
+
+    avatarInfoObject = JSON.parse(avatarInfo);
+
+    if (avatarInfoObject != null) {
+        tlc.thirdPersonCharacterModel = `https://id.worldhub.me:35525${avatarInfoObject.modelUrl}`;
+        Context.DefineContext("MW_TOP_LEVEL_CONTEXT", tlc);
+    }
+
+    InitializeModules();
+}
+
+function GetUserAvatar() {
+    Logging.Log("Getting User Avatar...");
+
+    var tlc = Context.GetContext("MW_TOP_LEVEL_CONTEXT");
+    if (tlc == null) {
+        Logging.LogError("MW_TOP_LEVEL_CONTEXT not found. Cannot get user avatar.");
+        return;
+    }
+
+    HTTPNetworking.Fetch(`https://id.worldhub.me:35525/get-user-avatar/${tlc.userID}`, "OnUserAvatarInfoReceived");
 }
 
 HandleQueryParams();

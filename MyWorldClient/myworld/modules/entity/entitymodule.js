@@ -13,21 +13,21 @@ class EntityModule {
 }
 
 function MW_Entity_LoadEntity(instanceID, instanceTag, entityID, variantID,
-    position, rotation, scale, startPlacing = true, parentEntity = null) {
+    position, rotation, scale, startPlacing = true, parentEntity = null) {Logging.Log("zxcvb");
 
     var topLevelContext = Context.GetContext("MW_TOP_LEVEL_CONTEXT");
-
+Logging.Log(entityID + " " + variantID);
     var variantInfo = MW_Entity_GetEntityVariantInfo(entityID, variantID);
 
-    if (variantInfo == null) {
+    /*if (variantInfo == null) {
         Logging.LogError("Error loading entity. Unable to get variant info.");
         return;
-    }
+    }*/
 
     if (variantInfo["type"] == null || variantInfo["type"] == "undefined") {
         variantInfo["type"] = "mesh";
     }
-
+Logging.Log(variantInfo["assets"]);
     var modelPath = null;
     if (variantInfo["assets"] != null) { // worlds_server + / + worldmetadata.id + / + variantinfo[assets]
         modelPath = topLevelContext.worldsServer + "/get-asset/" + topLevelContext.worldMetadata.id +
@@ -40,17 +40,17 @@ function MW_Entity_LoadEntity(instanceID, instanceTag, entityID, variantID,
         WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.ENTITY_ID", entityID);
         WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.VARIANT_ID", variantID);
         WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.MODEL_PATH", modelPath);
-        WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.TYPE", type);
+        //WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.TYPE", type);
         WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.INSTANCE_ID", instanceID);
-        WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.OFFSET.X", placementOffset.x);
-        WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.OFFSET.Y", placementOffset.y);
-        WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.OFFSET.Z", placementOffset.z);
-        WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.SCRIPTS", scripts == null ? "" : JSON.stringify(scripts));
-
-        if (type == "mesh") {
-            MeshEntity.Create(parentEntity, modelPath, [ modelPath ], position, rotation,
-                instanceID, "MW_Entity_FinishLoadingPlacingEntity");
-        }
+        //WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.OFFSET.X", placementOffset.x);
+        //WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.OFFSET.Y", placementOffset.y);
+        //WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.OFFSET.Z", placementOffset.z);
+        //WorldStorage.SetItem("METAWORLD.ENTITY.PLACING.SCRIPTS", scripts == null ? "" : JSON.stringify(scripts));
+Logging.Log("zxcvb " + position + " " + rotation + " " + instanceID);
+        //if (type == "mesh") {
+            Logging.Log("tyu");MeshEntity.QueueCreate(parentEntity, modelPath, [ modelPath ], position, rotation,
+                instanceID, "MW_Entity_FinishLoadingPlacingEntity", false);Logging.Log("poi");
+        /*}
         else if (type == "automobile") {
             if (wheels == null) {
                 Logging.LogWarning("Wheels not specified for automobile entity: " + modelPath);
@@ -71,9 +71,9 @@ function MW_Entity_LoadEntity(instanceID, instanceTag, entityID, variantID,
         }
         else {
             Logging.LogWarning("Entity type not supported: " + type);
-        }
+        }*/
     }
-    else {Logging.Log("model " + modelPath);
+    else {
         WorldStorage.SetItem("METAWORLD.ENTITY.PLACED.SCRIPTS", variantInfo["scripts"] == null ? ""
             : JSON.stringify(variantInfo["scripts"]));
 
@@ -137,7 +137,7 @@ function MW_Entity_FinishLoadingPlacingEntity(entity) {
     
     MW_Entity_Placement_StartPlacing(entity, type, entityID, variantID, entityID, variantID,
         modelPath, instanceID, entity.GetPosition(false), entity.GetRotation(false), scripts,
-        new Vector3(placementOffsetX, placementOffsetY, placementOffsetZ));
+        Vector3.zero);
 }
 
 function MW_Entity_FinishLoadingPlacedEntity(entity) {

@@ -4,13 +4,21 @@
 function FinishLoadingCharacter(character) {
     var context = Context.GetContext("THIRD_PERSON_CHARACTER_CONTROLLER");
     context.characterEntity = Entity.Get(context.characterEntityID);
+
+    if (context.characterModel != null) {
+        context.characterEntity.SetCharacterModel(context.characterModel,
+            context.characterOffset, context.characterRotation, context.labelOffset);
+    }
+
     context.OnLoaded();
 }
 
 class ThirdPersonCharacterController {
     constructor(name, id = null, minZ = -90, maxZ = 90, motionMultiplier = 0.1,
         rotationMultiplier = 0.1, position = Vector3.zero, onLoaded = null,
-        mode = "desktop", findGround = true) {
+        mode = "desktop", findGround = true, characterModel = null,
+        characterOffset = Vector3.zero, characterRotation = Quaternion.identity,
+        labelOffset = Vector3.zero) {
         this.minZ = minZ;
         this.maxZ = maxZ;
         this.motionMultiplier = motionMultiplier
@@ -24,6 +32,11 @@ class ThirdPersonCharacterController {
         this.motionMode = "free";
         this.inVehicle = false;
         this.activeVehicle = null;
+
+        this.characterModel = characterModel;
+        this.characterOffset = characterOffset;
+        this.characterRotation = characterRotation;
+        this.labelOffset = labelOffset;
         
         // Initialize camera mode from storage or default to third person
         var savedCameraMode = WorldStorage.GetItem("METAWORLD-CAMERA-MODE");
@@ -94,7 +107,7 @@ class ThirdPersonCharacterController {
                         Input.RemoveRigFollower(context.characterEntity);
                         context.characterEntity.PlaceCameraOn();
                         if (context.cameraMode === "third_person") {
-                            Camera.SetPosition(new Vector3(0, 1, -2), true);
+                            Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
                             context.characterEntity.SetVisibility(true, false);
                         } else {
                             Camera.SetPosition(new Vector3(0, 0.1, 0), true);
@@ -125,7 +138,7 @@ class ThirdPersonCharacterController {
                             Camera.SetPosition(new Vector3(0, 0.1, 0), true);
                             context.characterEntity.SetVisibility(false, false);
                         } else {
-                            Camera.SetPosition(new Vector3(0, 1, -2), true);
+                            Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
                             context.characterEntity.SetVisibility(true, false);
                         }
                     }
@@ -155,7 +168,7 @@ class ThirdPersonCharacterController {
             if (this.cameraMode === "first_person") {
                 Camera.SetPosition(new Vector3(0, 0.1, 0), true);
             } else {
-                Camera.SetPosition(new Vector3(0, 1, -2), true);
+                Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
             }
         }
         
@@ -355,7 +368,7 @@ class ThirdPersonCharacterController {
                 Camera.SetPosition(new Vector3(0, 0.1, 0), true);
                 context.characterEntity.SetVisibility(false, false);
             } else {
-                Camera.SetPosition(new Vector3(0, 1, -2), true);
+                Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
                 context.characterEntity.SetVisibility(true, false);
             }
         }
@@ -380,7 +393,7 @@ class ThirdPersonCharacterController {
                     Camera.SetPosition(new Vector3(0, 0.1, 0), true);
                     context.characterEntity.SetVisibility(false, false);
                 } else {
-                    Camera.SetPosition(new Vector3(0, 1, -2), true);
+                    Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
                     context.characterEntity.SetVisibility(true, false);
                 }
             }
@@ -622,7 +635,7 @@ function MW_Player_ThirdPerson_ToggleCameraMode() {
             Camera.SetPosition(new Vector3(0, 0.1, 0), true);
             context.characterEntity.SetVisibility(false, false);
         } else {
-            Camera.SetPosition(new Vector3(0, 1, -2), true);
+            Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
             context.characterEntity.SetVisibility(true, false);
         }
     }
@@ -647,7 +660,7 @@ function MW_Player_ThirdPerson_SetCameraMode(mode) {
                 Camera.SetPosition(new Vector3(0, 0.1, 0), true);
                 context.characterEntity.SetVisibility(false, false);
             } else {
-                Camera.SetPosition(new Vector3(0, 1, -2), true);
+                Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
                 context.characterEntity.SetVisibility(true, false);
             }
         }
@@ -682,7 +695,7 @@ function MW_Player_ThirdPerson_ExitVehicle() {
         // Place the camera on the character.
         context.characterEntity.PlaceCameraOn();
         Context.DefineContext("THIRD_PERSON_CHARACTER_CONTROLLER", context);
-        Camera.SetPosition(new Vector3(0, 1, -2), true);
+        Camera.SetPosition(new Vector3(0, 1.5, -2.75), true);
     }
     else {
         Logging.LogError("[ThirdPersonCharacter] Cannot exit vehicle, not in a vehicle.");

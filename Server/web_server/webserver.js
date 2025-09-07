@@ -1,7 +1,18 @@
 const express = require('express');
 const path = require('path');
+const https = require('https');
+const fs = require('fs');
+const cors = require('cors');
 
 const app = express();
+
+app.use(cors());
+
+const httpsServer = https.createServer({
+  key: fs.readFileSync('private.key'),
+  cert: fs.readFileSync('certificate.crt'),
+}, app);
+
 
 // Get arguments from the command line
 const args = process.argv.slice(2);
@@ -10,7 +21,7 @@ const DIRECTORY = args[1] ? path.resolve(args[1]) : path.join(__dirname, 'public
 
 app.use(express.static(DIRECTORY));
 
-app.listen(PORT, () => {
+httpsServer.listen(PORT, () => {
     console.log(`Serving files from ${DIRECTORY}`);
     console.log(`Server running at http://localhost:${PORT}`);
 });

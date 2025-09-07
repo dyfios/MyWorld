@@ -353,13 +353,17 @@ async function createEntityTemplate(worldId, templateData, userId, userToken, au
     try {
         checkAuthorization(userId, userToken, authCallback, "create an entity template");
 
+        const columns = ['entity_id', 'entity_tag', 'variant_id', 'variant_tag', 'type',
+            'assets', 'scripts'];
+        const values = columns.map((key) => templateData[key]);
+
         const dbPath = path.join(BASE_PATH, worldId, "world.db");
         const db = new sqlite3.Database(dbPath);
 
         await new Promise((resolve, reject) => {
             db.run(`
-                INSERT INTO entity_templates VALUES (${Object.keys(templateData).map(() => "?").join(", ")})
-            `, Object.values(templateData), (err) => (err ? reject(err) : resolve()));
+                INSERT INTO entity_templates VALUES (${Object.keys(values).map(() => "?").join(", ")})
+            `, Object.values(values), (err) => (err ? reject(err) : resolve()));
             db.close();
             console.log(`✅ Entity template created in world ${worldId}.`);
             onComplete(true);

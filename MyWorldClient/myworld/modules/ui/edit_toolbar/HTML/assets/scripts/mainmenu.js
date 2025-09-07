@@ -12,79 +12,115 @@ const initialMainButtonData = [
 
 const buttonContainer = document.getElementById('buttonContainer');
 const buttonLabel = document.getElementById('buttonLabel');
-const menu = document.getElementById('menu');
 const menuGridContainer = document.getElementById('menuGridContainer');
+let mainMenuButtonCount = 0;
+let selectedIndex = 0;
+
 const searchBar = document.getElementById('searchBar');
 const consoleMenu = document.getElementById('console');
 const consoleHistory = document.getElementById('consoleHistory');
 const consoleInput = document.getElementById('consoleInput');
 const consoleSubmit = document.getElementById('consoleSubmit');
 
-let mainMenuButtonCount = 0;
-
 let lowerToolbarFirstButton = null;
 
-let selectedIndex = 0;
+const tabButtons = document.querySelectorAll('.tab-button');
+const menuPages = document.querySelectorAll('.menu-page');
 
-function AddButtonToMainMenu(data, index, onClick) {
-    const buttonWrapper = document.createElement('div');
-    buttonWrapper.className = 'round-button-wrapper';
+tabButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    tabButtons.forEach(btn => btn.classList.remove('selected'));
+    button.classList.add('selected');
 
-    const button = document.createElement('button');
-    button.className = 'round-button';
-    button.dataset.index = index;
-    button.innerHTML = `<img src="${data.icon}" alt="Icon">`;
-    button.setAttribute('data-bs-toggle', 'tooltip');
-    button.setAttribute('data-bs-placement', 'top');
-    button.setAttribute('title', data.tooltip);
-
-    const label = document.createElement('div');
-    label.className = 'label';
-    label.textContent = data.tooltip;
-
-    buttonWrapper.appendChild(button);
-    buttonWrapper.appendChild(label);
-    menuGridContainer.appendChild(buttonWrapper);
-
-    button.addEventListener('click', () => {
-        InsertButtonIntoLowerToolbar(data, index, onClick);
+    const targetId = button.dataset.target;
+    menuPages.forEach(page => {
+      page.classList.remove('active');
+      if (page.id === targetId) {
+        page.classList.add('active');
+      }
     });
+  });
+});
+
+
+// ? Enable Drag-and-Drop on Toolbar
+Sortable.create(buttonContainer, {
+  animation: 150,
+  ghostClass: 'sortable-ghost',
+  onEnd: function (evt) {
+    selectedIndex = evt.newIndex;
+    const selectedButton = buttonContainer.childNodes[selectedIndex];
+    selectedButton.click();
+    //postWorldMessage("TOOLBAR.ORDER.CHANGED(" + selectedIndex + ")");
+  }
+});
+
+// ? Unified AddButton Function
+function AddButton({ type = 'generic', name, iconPath, onClickMsg }) {
+  const data = {
+    icon: iconPath,
+    tooltip: name,
+    category: type
+  };
+  AddButtonToMainMenu(data, mainMenuButtonCount++, onClickMsg);
 }
 
-function InsertButtonIntoLowerToolbar(data, index, onClick) {
-    AddButtonToLowerToolbarAtFront(data, index, onClick);
-    RemoveLastButtonFromLowerToolbar();
+// ? Add to Main Menu Grid
+function AddButtonToMainMenu(data, index, onClickMsg) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'round-button-wrapper';
+  wrapper.setAttribute('data-category', data.category || 'generic');
+
+  const button = document.createElement('button');
+  button.className = 'round-button';
+  button.dataset.index = index;
+  button.innerHTML = `<img src="${data.icon}" alt="Icon">`;
+  button.setAttribute('title', data.tooltip);
+
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = data.tooltip;
+
+  wrapper.appendChild(button);
+  wrapper.appendChild(label);
+  menuGridContainer.appendChild(wrapper);
+
+  button.addEventListener('click', () => {
+    InsertButtonIntoLowerToolbar(data, index, onClickMsg);
+  });
 }
 
-function AddButtonToLowerToolbarAtFront(data, index, onClick) {
-    const button = document.createElement('button');
-    button.className = 'round-button';
-    button.dataset.index = index;
-    button.innerHTML = `<img src="${data.icon}" alt="Icon" width="25">`;
-    button.setAttribute('data-bs-toggle', 'tooltip');
-    button.setAttribute('data-bs-placement', 'top');
-    button.setAttribute('title', data.tooltip);
+// ? Insert Button Logic
+function InsertButtonIntoLowerToolbar(data, index, onClickMsg) {
+  AddButtonToLowerToolbarAtFront(data, index, onClickMsg);
+  RemoveLastButtonFromLowerToolbar();
+}
 
-    if (lowerToolbarFirstButton == null) {
-        buttonContainer.appendChild(button);
-    }
-    else {
-        buttonContainer.insertBefore(button, buttonContainer.firstChild)
-    }
-    lowerToolbarFirstButton = button;
+function AddButtonToLowerToolbarAtFront(data, index, onClickMsg) {
+  const button = document.createElement('button');
+  button.className = 'round-button';
+  button.dataset.index = index;
+  button.innerHTML = `<img src="${data.icon}" alt="Icon" width="25">`;
+  button.setAttribute('title', data.tooltip);
 
-    button.addEventListener('click', () => {
-        document.querySelectorAll('.round-button').forEach(btn => {
-            btn.classList.remove('selected');
-        });
-        button.classList.add('selected');
-        buttonLabel.innerHTML = data.tooltip;
-        postWorldMessage(onClick);
-    });
+  if (buttonContainer.childNodes.length === 0) {
+    buttonContainer.appendChild(button);
+  } else {
+    buttonContainer.insertBefore(button, buttonContainer.firstChild);
+  }
+
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.round-button').forEach(btn => btn.classList.remove('selected'));
+    button.classList.add('selected');
+    buttonLabel.textContent = data.tooltip;
+    postWorldMessage(onClickMsg);
+  });
 }
 
 function RemoveLastButtonFromLowerToolbar() {
+  if (buttonContainer.childNodes.length > 9) {
     buttonContainer.removeChild(buttonContainer.lastChild);
+  }
 }
 
 function SelectLowerToolbarButton(index) {
@@ -129,10 +165,10 @@ document.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() === '\\') {
         menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         if (menu.style.display === 'block') {
-            postWorldMessage("TOOLBAR.DISPLAY.ENABLED");
+            //postWorldMessage("TOOLBAR.DISPLAY.ENABLED");
         }
         else {
-            postWorldMessage("TOOLBAR.DISPLAY.DISABLED");
+            //postWorldMessage("TOOLBAR.DISPLAY.DISABLED");
         }
     }
     // Listen for the "right Shift" keypress to toggle the console
@@ -157,7 +193,7 @@ if (consoleInput != null) {
     consoleInput.addEventListener('focus', () => {
         consoleInput.style.backgroundColor = "#222"; // Example: darken background on focus
         consoleInput.style.color = "#fff"; // Change text color for readability
-        postWorldMessage("TOOLBAR.CONSOLE.INPUT-ACTIVE");
+        //postWorldMessage("TOOLBAR.CONSOLE.INPUT-ACTIVE");
     });
 }
 
@@ -166,7 +202,7 @@ if (consoleInput != null) {
     consoleInput.addEventListener('blur', () => {
         consoleInput.style.backgroundColor = ""; // Reset background color
         consoleInput.style.color = ""; // Reset text color
-        postWorldMessage("TOOLBAR.CONSOLE.INPUT-INACTIVE");
+        //postWorldMessage("TOOLBAR.CONSOLE.INPUT-INACTIVE");
     });
 }
 
@@ -178,10 +214,10 @@ if (consoleInput != null) {
             if (userInput.startsWith('/')) {
                 // This is a command - remove the '/' prefix and send as CMD
                 const command = userInput.substring(1);
-                postWorldMessage("TOOLBAR.CONSOLE.SEND-COMMAND(" + command + ")");
+                //postWorldMessage("TOOLBAR.CONSOLE.SEND-COMMAND(" + command + ")");
             } else {
                 // This is a regular message - send as MSG
-                postWorldMessage("TOOLBAR.CONSOLE.SEND-MESSAGE(" + userInput + ")");
+                //postWorldMessage("TOOLBAR.CONSOLE.SEND-MESSAGE(" + userInput + ")");
             }
             consoleInput.value = ''; // Clear input after submission
         }
@@ -222,10 +258,10 @@ function AddEntityButton(entityName, imgPath, onClickMsg) {
 function ToggleEntitiesMenu() {
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         if (menu.style.display === 'block') {
-            postWorldMessage("TOOLBAR.DISPLAY.ENABLED");
+            //postWorldMessage("TOOLBAR.DISPLAY.ENABLED");
         }
         else {
-            postWorldMessage("TOOLBAR.DISPLAY.DISABLED");
+            //postWorldMessage("TOOLBAR.DISPLAY.DISABLED");
         }
 }
 
@@ -235,7 +271,7 @@ function ToggleGrid() {
     grid.checked = !grid.checked;
     if (grid) {
         grid.checked = !grid.checked;
-        postWorldMessage("TOOLBAR.GRID.TOGGLE(" + grid.checked + ")");
+        //postWorldMessage("TOOLBAR.GRID.TOGGLE(" + grid.checked + ")");
     }
 }
 
@@ -243,3 +279,11 @@ const grid = document.getElementById('gridCheckbox');
 if (grid) {
     grid.checked = true;
 }
+
+window.addEventListener('load', () => {
+  const defaultTabId = 'toolPage';
+  const defaultTabButton = document.querySelector(`.tab-button[data-target="${defaultTabId}"]`);
+  if (defaultTabButton) {
+    defaultTabButton.click();
+  }
+});

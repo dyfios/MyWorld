@@ -34,10 +34,9 @@ function FinishMainToolbarCreation() {
     var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-TOOLBAR-ID"));
     if (mainToolbar != null) {
         mainToolbar.SetInteractionState(InteractionState.Static);
-        mainToolbar.LoadFromURL('metaworld/modules/ui/edit_toolbar/HTML/editmenu.html');
+        mainToolbar.LoadFromURL('myworld/modules/ui/edit_toolbar/HTML/editmenu.html');
         Time.SetTimeout('SetUpToolsInMenu();', 3000);
-        Time.SetTimeout('SetUpTerrainInMenu();', 5000);
-        Time.SetTimeout('SetUpEntitiesInMenu();', 5000);
+        Time.SetTimeout('SetUpTemplatesInMenu();', 5000);
         Time.SetTimeout('InitializeLowerToolbarItems();', 5000);
         Time.SetTimeout('SelectEntityMenuToolbarButton(0);', 10000);
     }
@@ -47,9 +46,8 @@ function FinishVRMainToolbarCreation() {
     var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-VR-TOOLBAR-ID"));
     if (mainToolbar != null) {
         mainToolbar.SetInteractionState(InteractionState.Static);
-        mainToolbar.LoadFromURL('metaworld/modules/ui/edit_toolbar/HTML/editmenu-vr.html');
+        mainToolbar.LoadFromURL('myworld/modules/ui/edit_toolbar/HTML/editmenu-vr.html');
         Time.SetTimeout('SetUpToolsInVRMenu();', 3000);
-        Time.SetTimeout('SetUpTerrainInVRMenu();', 5000);
         Time.SetTimeout('SetUpEntitiesInVRMenu();', 5000);
         Time.SetTimeout('InitializeLowerVRToolbarItems();', 5000);
         Time.SetTimeout('SelectVREntityMenuToolbarButton(0);' , 10000);
@@ -103,9 +101,9 @@ class MainToolbar {
 
         Context.DefineContext("mainToolbarContext", this);
 
-        this.vrToolbarPanel = ContainerEntity.Create(null, Vector3.zero, Quaternion.identity,
-            new Vector3(0.1, 0.1, 0.1), false, null, WorldStorage.GetItem("VR-TOOLBAR-PANEL-ID"),
-            "FinishVRToolbarPanelSetup");
+        //this.vrToolbarPanel = ContainerEntity.Create(null, Vector3.zero, Quaternion.identity,
+        //    new Vector3(0.1, 0.1, 0.1), false, null, WorldStorage.GetItem("VR-TOOLBAR-PANEL-ID"),
+        //    "FinishVRToolbarPanelSetup");
         this.toolbarCanvas = CanvasEntity.Create(null, Vector3.zero, Quaternion.identity,
             Vector3.one, false, WorldStorage.GetItem("TOOLBAR-CANVAS-ID"), "ToolbarCanvas", "FinishToolbarSetup");
         
@@ -320,7 +318,7 @@ function HandleToolbarMessage(msg) {
         WorldStorage.SetItem("DIG-MODE", 0);
         WorldStorage.SetItem("ENTITY-DELETE-ENABLED", "FALSE");
     }
-    else if (msg.startsWith("TOOLBAR.ENTITY.ENTITY-SELECTED")) {
+    else if (msg.startsWith("TOOLBAR.ENTITY.ENTITY-SELECTED")) {Logging.Log("wertyuj");
         entityModule.entityPlacement.CancelPlacing();
         var configModule = Context.GetContext("CONFIGURATION_MODULE");
         
@@ -330,8 +328,8 @@ function HandleToolbarMessage(msg) {
             return;
         }
         
-        var entityID = parseInt(msgParts[3]);
-        var variantID = parseInt(msgParts[4]);
+        var entityID = msgParts[3];
+        var variantID = msgParts[4];
 
         if (entityID == -1 && variantID == -1) {
             var entityPlacementComponent = Context.GetContext("ENTITY_PLACEMENT_COMPONENT");
@@ -340,25 +338,12 @@ function HandleToolbarMessage(msg) {
             }
             return;
         }
-
+Logging.Log(entityID + " " + variantID);
         WorldStorage.SetItem("ENTITY-DELETE-ENABLED", "FALSE");
         WorldStorage.SetItem("INTERACTION-MODE", "ENTITY-PLACING");
         var instanceUUID = UUID.NewUUID().ToString();
-        for (var entity in configModule.entitiesConfig) {
-            if (configModule.entitiesConfig[entity].id == entityID) {
-                for (var variant in configModule.entitiesConfig[entity].variants) {
-                    if (configModule.entitiesConfig[entity].variants[variant].variant_id == variantID) {
-                        MW_Entity_LoadEntity(configModule.entitiesConfig[entity].variants[variant].type, instanceUUID, entity, variant,
-                        configModule.entitiesConfig[entity].id, configModule.entitiesConfig[entity].variants[variant].variant_id,
-                        configModule.entitiesConfig[entity].variants[variant].model,
-                        configModule.entitiesConfig[entity].variants[variant].wheels, Vector3.zero, Vector3.zero, Quaternion.identity,
-                        configModule.entitiesConfig[entity].variants[variant].mass,
-                        configModule.entitiesConfig[entity].variants[variant].scripts);
-                        return;
-                    }
-                }
-            }
-        }
+        MW_Entity_LoadEntity(instanceUUID, "instance", entityID, variantID, Vector3.zero, Quaternion.identity, Vector3.one);
+        return;
     }
     else if (msg == "TOOLBAR.TERRAIN.INCREASE-BRUSH") {
         var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-TOOLBAR-ID"));
@@ -500,19 +485,29 @@ function ToggleEntityMenu(state) {
     }
 }
 
+function SetUpTemplatesInMenu() {
+    var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-TOOLBAR-ID"));
+    var entityModuleContext = Context.GetContext("ENTITY_MODULE");
+    if (mainToolbar != null) {
+        for (let entityTemplate in entityModuleContext.entityTemplates) {
+            for (let entityVariant in entityModuleContext.entityTemplates[entityTemplate]) {
+                mainToolbar.ExecuteJavaScript("AddEntityButton('" +
+                    entityModuleContext.entityTemplates[entityTemplate][entityVariant].entity_tag + ":" +
+                    entityModuleContext.entityTemplates[entityTemplate][entityVariant].variant_tag + "','" +
+                    defaultEntityPath + "','" + "TOOLBAR.ENTITY.ENTITY-SELECTED." +
+                    entityModuleContext.entityTemplates[entityTemplate][entityVariant].entity_id +
+                    "." + entityModuleContext.entityTemplates[entityTemplate][entityVariant].variant_id +
+                    "');", null);
+            }
+        }
+    }
+}
+
 function SetUpToolsInMenu() {
     var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-TOOLBAR-ID"));
     if (mainToolbar != null) {
         mainToolbar.ExecuteJavaScript("AddToolButton('Hand','" + handPath +
             "','TOOLBAR.TOOLS.TOOL-SELECTED.HAND');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel','" + squareShovelx1Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-1');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel (2x)','" + squareShovelx2Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-2');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel (4x)','" + squareShovelx4Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-4');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel (8x)','" + squareShovelx8Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-8');", null);
         mainToolbar.ExecuteJavaScript("AddToolButton('Sledge Hammer','" + sledgeHammerPath +
             "','TOOLBAR.TOOLS.TOOL-SELECTED.SLEDGE-HAMMER');", null);
     }
@@ -523,71 +518,8 @@ function SetUpToolsInVRMenu() {
     if (mainToolbar != null) {
         mainToolbar.ExecuteJavaScript("AddToolButton('Hand','" + handPath +
             "','TOOLBAR.TOOLS.TOOL-SELECTED.HAND');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel','" + squareShovelx1Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-1');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel (2x)','" + squareShovelx2Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-2');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel (4x)','" + squareShovelx4Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-4');", null);
-        mainToolbar.ExecuteJavaScript("AddToolButton('Square Shovel (8x)','" + squareShovelx8Path +
-            "','TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-8');", null);
         mainToolbar.ExecuteJavaScript("AddToolButton('Sledge Hammer','" + sledgeHammerPath +
             "','TOOLBAR.TOOLS.TOOL-SELECTED.SLEDGE-HAMMER');", null);
-    }
-}
-
-function SetUpTerrainInMenu() {
-    var configModule = Context.GetContext("CONFIGURATION_MODULE");
-    var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-TOOLBAR-ID"));
-    if (mainToolbar != null) {
-        for (var terrainLayer in configModule.terrainConfig.layers) {
-            var iconPath = configModule.terrainConfig.layers[terrainLayer].color_texture;
-            if (iconPath == null || iconPath == "") {
-                iconPath = defaultTerrainPath;
-            }
-
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + "','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".1');", null);
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + " (2x)','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".2');", null);
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + " (4x)','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".4');", null);
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + " (8x)','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".8');", null);
-        }
-    }
-}
-
-function SetUpTerrainInVRMenu() {
-    var configModule = Context.GetContext("CONFIGURATION_MODULE");
-    var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-VR-TOOLBAR-ID"));
-    if (mainToolbar != null) {
-        for (var terrainLayer in configModule.terrainConfig.layers) {
-            var iconPath = configModule.terrainConfig.layers[terrainLayer].color_texture;
-            if (iconPath == null || iconPath == "") {
-                iconPath = defaultTerrainPath;
-            }
-
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + "','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".1');", null);
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + " (2x)','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".2');", null);
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + " (4x)','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".4');", null);
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + " (8x)','" + iconPath + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + ".8');", null);
-        }
-    }
-}
-
-function SetUpVRTerrainMenu() {
-    var configModule = Context.GetContext("CONFIGURATION_MODULE");
-    var mainToolbar = Entity.Get(WorldStorage.GetItem("MAIN-VR-TOOLBAR-ID"));
-    if (mainToolbar != null) {
-        for (var terrainLayer in configModule.terrainConfig.layers) {
-            mainToolbar.ExecuteJavaScript("AddMaterialButton('" + terrainLayer + "','" + configModule.terrainConfig.layers[terrainLayer].color_texture + "','" +
-                "TOOLBAR.TERRAIN.MATERIAL-SELECTED." + configModule.terrainConfig.layers[terrainLayer].layer + "');", null);
-        }
     }
 }
 
@@ -653,27 +585,8 @@ function InitializeLowerToolbarItems() {
         }
     }
 
-    var numTerrainLayersInMenu = 0;
-    for (var terrainLayer in configModule.terrainConfig.layers) {
-        if (numTerrainLayersInMenu >= 3) {
-            break;
-        }
-
-        var iconPath = configModule.terrainConfig.layers[terrainLayer].color_texture;
-        if (iconPath == null || iconPath == "") {
-            iconPath = defaultTerrainPath;
-        }
-
-        mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + iconPath +
-            "',tooltip:'"+ terrainLayer + "'},0,'TOOLBAR.TERRAIN.MATERIAL-SELECTED." +
-            configModule.terrainConfig.layers[terrainLayer].layer + ".1');", null);
-        numTerrainLayersInMenu++;
-    }
-
     mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + sledgeHammerPath +
         "',tooltip:'Sledge Hammer'},0,'TOOLBAR.TOOLS.TOOL-SELECTED.SLEDGE-HAMMER');", null);
-    mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + squareShovelx1Path +
-        "',tooltip:'Square Shovel'},0,'TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-1');", null);
     mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + handPath +
         "',tooltip:'Hand'},0,'TOOLBAR.TOOLS.TOOL-SELECTED.HAND');", null);
 }
@@ -702,27 +615,8 @@ function InitializeLowerVRToolbarItems() {
         }
     }
 
-    var numTerrainLayersInMenu = 0;
-    for (var terrainLayer in configModule.terrainConfig.layers) {
-        if (numTerrainLayersInMenu >= 3) {
-            break;
-        }
-
-        var iconPath = configModule.terrainConfig.layers[terrainLayer].color_texture;
-        if (iconPath == null || iconPath == "") {
-            iconPath = defaultTerrainPath;
-        }
-
-        mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + iconPath +
-            "',tooltip:'"+ terrainLayer + "'},0,'TOOLBAR.TERRAIN.MATERIAL-SELECTED." +
-            configModule.terrainConfig.layers[terrainLayer].layer + ".1');", null);
-        numTerrainLayersInMenu++;
-    }
-
     mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + sledgeHammerPath +
         "',tooltip:'Sledge Hammer'},0,'TOOLBAR.TOOLS.TOOL-SELECTED.SLEDGE-HAMMER');", null);
-    mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + squareShovelx1Path +
-        "',tooltip:'Square Shovel'},0,'TOOLBAR.TOOLS.TOOL-SELECTED.SQUARE-SHOVEL-1');", null);
     mainToolbar.ExecuteJavaScript("InsertButtonIntoLowerToolbar({icon:'" + handPath +
         "',tooltip:'Hand'},0,'TOOLBAR.TOOLS.TOOL-SELECTED.HAND');", null);
 }

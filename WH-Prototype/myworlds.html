@@ -3,46 +3,384 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Worlds</title>
+  <title>My Worlds - WH Search Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .myworlds-hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      padding-top: 100px; /* Space for fixed header */
+      padding-bottom: 120px; /* Space for fixed footer */
+    }
+    
+    .myworlds-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .myworlds-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 3rem;
+      margin: 2rem auto;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
+    }
+    
+    .myworlds-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .myworlds-title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, #fff, #e3f2fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .myworlds-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 0;
+    }
+    
+    .worlds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .world-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .world-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.6s;
+    }
+    
+    .world-card:hover::before {
+      left: 100%;
+    }
+    
+    .world-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+    
+    .world-card-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+    
+    .world-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .world-card-subtitle {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    
+    .create-world-card {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+    }
+    
+    .create-world-card:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .create-world-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.6;
+    }
+    
+    .floating-elements {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    .floating-icon {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.1);
+      animation: float 10s ease-in-out infinite;
+    }
+    
+    .floating-icon:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; font-size: 3rem; }
+    .floating-icon:nth-child(2) { top: 20%; right: 15%; animation-delay: 3s; font-size: 2.5rem; }
+    .floating-icon:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 6s; font-size: 2rem; }
+    .floating-icon:nth-child(4) { bottom: 10%; right: 10%; animation-delay: 2s; font-size: 2.8rem; }
+    .floating-icon:nth-child(5) { top: 60%; left: 5%; animation-delay: 4s; font-size: 2.2rem; }
+    .floating-icon:nth-child(6) { top: 70%; right: 5%; animation-delay: 8s; font-size: 1.8rem; }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-25px) rotate(180deg); }
+    }
+    
+    .stats-section {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      text-align: center;
+    }
+    
+    .stat-item {
+      padding: 1rem;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    
+    /* Dark mode adjustments */
+    body.dark-mode .myworlds-hero {
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    }
+    
+    body.dark-mode .myworlds-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    body.dark-mode .world-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    body.dark-mode .world-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .myworlds-hero {
+        padding-top: 80px;
+        padding-bottom: 100px;
+        min-height: auto;
+      }
+      
+      .myworlds-container {
+        margin: 1rem auto;
+        padding: 2rem;
+        max-width: 95%;
+      }
+      
+      .myworlds-title {
+        font-size: 2.5rem;
+      }
+      
+      .worlds-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+      
+      .world-card {
+        height: 150px;
+        padding: 1.5rem;
+      }
+      
+      .world-card-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .floating-icon {
+        display: none; /* Hide floating icons on mobile for better performance */
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .myworlds-container {
+        padding: 1.5rem;
+      }
+      
+      .worlds-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
+  <!-- Header Navigation -->
+  <nav class="navbar navbar-expand-lg" id="header" style="position: absolute; top: 0; left: 0; right: 0; z-index: 1030; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">
-        <img src="logo.png" alt="Logo" style="height:40px;">
+      <a class="navbar-brand fw-bold animated-gradient-text" href="/" style="color: white;">
+        <i class="fas fa-globe-americas me-2"></i>WH Search Engine
       </a>
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Explore</a></li>
-        <li class="nav-item"><a class="nav-link" href="myworlds.html">Create</a></li>
+        <li class="nav-item">
+          <a class="nav-link modern-hover" href="index.html" style="color: rgba(255, 255, 255, 0.9);">
+            <i class="fas fa-search me-1"></i>Explore
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link modern-hover" href="myworlds.html" style="color: rgba(255, 255, 255, 0.9);">
+            <i class="fas fa-globe me-1"></i>My Worlds
+          </a>
+        </li>
       </ul>
-      <div class="d-flex align-items-center">
-        <button class="btn btn-outline-secondary me-3" id="themeToggle">ðŸŒ™</button>
+      <div class="d-flex align-items-center gap-2">
         <div class="dropdown">
-          <button class="btn btn-light rounded-circle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="user-icon.png" alt="User Icon" style="height:40px;">
+          <button class="btn btn-outline-light modern-hover rounded-circle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px;">
+            <i class="fas fa-user"></i>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-            <li><a class="dropdown-item" href="#">My Account</a></li>
-            <li><a class="dropdown-item" href="#">Appearance</a></li>
+          <ul class="dropdown-menu dropdown-menu-end glass-container" aria-labelledby="userMenu">
+            <li><a class="dropdown-item modern-hover" href="#"><i class="fas fa-user-circle me-2"></i>My Account</a></li>
+            <li><a class="dropdown-item modern-hover" href="#"><i class="fas fa-paint-brush me-2"></i>Appearance</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item modern-hover" href="#" id="themeToggle"><i class="fas fa-moon me-2"></i>Toggle Dark/Light Mode</a></li>
           </ul>
         </div>
       </div>
     </div>
   </nav>
-  <!-- My Worlds Content -->
-  <div class="container mt-4">
-    <h1>My Worlds</h1>
-    <div class="d-flex flex-wrap">
-      <!-- World Buttons -->
-      <button class="btn btn-secondary large-button mx-2 my-2" data-world-id="1" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="World 1"></button>
-      <button class="btn btn-secondary large-button mx-2 my-2" data-world-id="2" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="World 2"></button>
-      <!-- Create World Button -->
-      <button class="btn btn-primary large-button mx-2 my-2" onclick="showCreateWorldPanel()" data-bs-toggle="tooltip" title="Create World">+</button>
+  <!-- My Worlds Hero Section -->
+  <section class="myworlds-hero">
+    <div class="floating-elements">
+      <i class="fas fa-globe floating-icon"></i>
+      <i class="fas fa-rocket floating-icon"></i>
+      <i class="fas fa-satellite floating-icon"></i>
+      <i class="fas fa-planet-mars floating-icon"></i>
+      <i class="fas fa-cube floating-icon"></i>
+      <i class="fas fa-star floating-icon"></i>
     </div>
-  </div>
+    
+    <div class="container">
+      <div class="myworlds-container">
+        <div class="myworlds-header">
+          <h1 class="myworlds-title">My Worlds</h1>
+          <p class="myworlds-subtitle">Create, manage, and explore your virtual universes</p>
+        </div>
+        
+        <!-- Stats Section -->
+        <div class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number" id="totalWorlds">2</span>
+              <div class="stat-label">Total Worlds</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="totalVisits">1,247</span>
+              <div class="stat-label">Total Visits</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="activeWorlds">2</span>
+              <div class="stat-label">Active Worlds</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="avgRating">4.8</span>
+              <div class="stat-label">Avg. Rating</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Worlds Grid -->
+        <div class="worlds-grid">
+          <!-- Existing World Cards -->
+          <div class="world-card" data-world-id="1" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="Click to view details">
+            <i class="fas fa-globe world-card-icon"></i>
+            <div class="world-card-title">My First World</div>
+            <div class="world-card-subtitle">Forest Adventure</div>
+          </div>
+          
+          <div class="world-card" data-world-id="2" onclick="showWorldPanel(this)" data-bs-toggle="tooltip" title="Click to view details">
+            <i class="fas fa-city world-card-icon"></i>
+            <div class="world-card-title">City Explorer</div>
+            <div class="world-card-subtitle">Urban Experience</div>
+          </div>
+          
+          <!-- Create New World Card -->
+          <div class="world-card create-world-card" onclick="showCreateWorldPanel()" data-bs-toggle="tooltip" title="Create a new world">
+            <i class="fas fa-plus create-world-icon"></i>
+            <div class="world-card-title">Create New World</div>
+            <div class="world-card-subtitle">Start your adventure</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
   
   <!-- World Details Modal -->
   <div class="modal fade" id="worldModal" tabindex="-1" aria-labelledby="worldModalLabel" aria-hidden="true">
@@ -153,8 +491,132 @@
       </div>
     </div>
   </div>
+
+  <iframe id="loginiframe" src="https://id.worldhub.me:35526/get-credentials.html" hidden></iframe>
+
+  <!-- Footer -->
+  <footer class="position-fixed bottom-0 start-0 end-0 text-center py-2" style="background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); color: rgba(255, 255, 255, 0.7); z-index: 1000; font-size: 0.85rem;">
+    <div class="container">
+      <p class="mb-1">© 2025 Five Squared Interactive. All rights reserved.</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="#" class="text-light text-decoration-none opacity-75"><i class="fas fa-shield-alt me-1"></i>Privacy</a>
+        <a href="#" class="text-light text-decoration-none opacity-75"><i class="fas fa-file-contract me-1"></i>Terms</a>
+        <a href="#" class="text-light text-decoration-none opacity-75"><i class="fas fa-info-circle me-1"></i>About</a>
+      </div>
+    </div>
+  </footer>
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="theme-manager.js"></script>
   <script src="scripts.js"></script>
+  <script>
+    // Enhanced My Worlds functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+      
+      // Animate counters
+      function animateCounter(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          const current = Math.floor(progress * (end - start) + start);
+          element.textContent = current.toLocaleString();
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          }
+        };
+        window.requestAnimationFrame(step);
+      }
+      
+      // Animate stats on page load
+      setTimeout(() => {
+        animateCounter(document.getElementById('totalWorlds'), 0, 2, 1000);
+        animateCounter(document.getElementById('totalVisits'), 0, 1247, 2000);
+        animateCounter(document.getElementById('activeWorlds'), 0, 2, 1500);
+        
+        // Special handling for decimal rating
+        const ratingEl = document.getElementById('avgRating');
+        let startRating = 0;
+        const endRating = 4.8;
+        const ratingDuration = 1500;
+        let startTimestamp = null;
+        const stepRating = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / ratingDuration, 1);
+          const current = progress * endRating;
+          ratingEl.textContent = current.toFixed(1);
+          if (progress < 1) {
+            window.requestAnimationFrame(stepRating);
+          }
+        };
+        window.requestAnimationFrame(stepRating);
+      }, 500);
+      
+      // Enhanced template selection handler
+      const templateSelect = document.getElementById('templateSelect');
+      if (templateSelect) {
+        templateSelect.addEventListener('change', function() {
+          const template = this.value;
+          const thumbnail = document.getElementById('templateThumbnail');
+          const placeholder = document.getElementById('thumbnailPlaceholder');
+          
+          if (template) {
+            // Show template preview (you would load actual template images here)
+            thumbnail.src = `https://via.placeholder.com/300x200/667eea/ffffff?text=${template.charAt(0).toUpperCase() + template.slice(1)}+World`;
+            thumbnail.style.display = 'block';
+            placeholder.style.display = 'none';
+          } else {
+            thumbnail.style.display = 'none';
+            placeholder.style.display = 'block';
+          }
+        });
+      }
+      
+      // Helper function to add new world card
+      function addNewWorldCard(name, template, url) {
+        const worldsGrid = document.querySelector('.worlds-grid');
+        const createCard = document.querySelector('.create-world-card');
+        
+        if (worldsGrid && createCard) {
+          const newCard = document.createElement('div');
+          newCard.className = 'world-card';
+          newCard.setAttribute('data-world-id', Date.now());
+          newCard.setAttribute('onclick', 'showWorldPanel(this)');
+          newCard.setAttribute('data-bs-toggle', 'tooltip');
+          newCard.setAttribute('title', 'Click to view details');
+          
+          const icon = template === 'city' ? 'fa-city' : 
+                      template === 'forest' ? 'fa-tree' :
+                      template === 'desert' ? 'fa-sun' :
+                      template === 'ocean' ? 'fa-water' : 'fa-globe';
+          
+          newCard.innerHTML = `
+            <i class="fas ${icon} world-card-icon"></i>
+            <div class="world-card-title">${name}</div>
+            <div class="world-card-subtitle">${template.charAt(0).toUpperCase() + template.slice(1)} World</div>
+          `;
+          
+          worldsGrid.insertBefore(newCard, createCard);
+          
+          // Animate in
+          newCard.style.opacity = '0';
+          newCard.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            newCard.style.transition = 'all 0.3s ease';
+            newCard.style.opacity = '1';
+            newCard.style.transform = 'translateY(0)';
+          }, 100);
+        }
+      }
+      
+      // Make addNewWorldCard available globally for scripts.js
+      window.addNewWorldCard = addNewWorldCard;
+    });
+  </script>
 </body>
 </html>

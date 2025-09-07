@@ -155,18 +155,19 @@ class EntityPlacement {
                 return;
             }
             
-            var pos = MW_Rend_GetWorldPositionForRenderedPosition(entityPlacementComponent.placingEntity.GetPosition(false));
+            var tlc = Context.GetContext("MW_TOP_LEVEL_CONTEXT");
+            var pos = entityPlacementComponent.placingEntity.GetPosition(false);
             var rot = entityPlacementComponent.placingEntity.GetRotation(false);
-            var terrainIndex = MW_Rend_GetRegionIndexForWorldPos(pos);
-            var regionPos = MW_Rend_GetRegionPosForWorldPos(pos, terrainIndex);
-            MW_REST_SendPositionEntityRequest(configModule.worldConfig["world-state-service"], terrainIndex,
-                entityPlacementComponent.entityID, entityPlacementComponent.variantID, entityPlacementComponent.instanceID,
-                regionPos, rot, identityModule.userID, identityModule.token, "MW_Entity_Placement_OnPositionEntityResponseReceived");
+            //var terrainIndex = MW_Rend_GetRegionIndexForWorldPos(pos);
+            var regionPos = pos;
+            MW_REST_SendAddEntityInstanceRequest(tlc.worldsServer, tlc.worldMetadata.id, tlc.userID, tlc.token,
+                entityPlacementComponent.instanceID, "instance", entityPlacementComponent.entityID, entityPlacementComponent.variantID, null, regionPos, rot, Vector3.one,
+                "default", tlc.userID, true, true, true, true, true, true, true, true,
+                "MW_Entity_Placement_OnPositionEntityResponseReceived");
             
-            var regionIndex = MW_Rend_GetRegionIndexForWorldPos(pos);
-            MW_Sync_VSS_SendEntityAddUpdate(worldRenderingModule.regionSynchronizers[regionIndex.x + "." + regionIndex.y],
-                entityPlacementComponent.instanceID, "{x:" + pos.x + ",y:" + pos.y + ",z:" + pos.z + "}",
-                "{x:" + rot.x + ",y:" + rot.y + ",z:" + rot.z + ",w:" + rot.w + "}");
+            //MW_Sync_VSS_SendEntityAddUpdate(worldRenderingModule.regionSynchronizers[regionIndex.x + "." + regionIndex.y],
+            //    entityPlacementComponent.instanceID, "{x:" + pos.x + ",y:" + pos.y + ",z:" + pos.z + "}",
+            //    "{x:" + rot.x + ",y:" + rot.y + ",z:" + rot.z + ",w:" + rot.w + "}");
             
             if (entityPlacementComponent.scripts != null) {
                 MW_Script_AddScriptEntity(entityPlacementComponent.placingEntity, entityPlacementComponent.scripts);
@@ -190,7 +191,7 @@ class EntityPlacement {
                 }
             }
 
-            entityPlacementComponent.placingEntity.SetParent(MW_Rend_GetTerrainTileForIndex(terrainIndex));
+            //entityPlacementComponent.placingEntity.SetParent(MW_Rend_GetTerrainTileForIndex(terrainIndex));
             entityPlacementComponent.placingEntity.SetHighlight(false);
             if (entityPlacementComponent.placingEntity instanceof AutomobileEntity || entityPlacementComponent.placingEntity instanceof AirplaneEntity) {
                 entityPlacementComponent.placingEntity.SetInteractionState(InteractionState.Physical);
@@ -199,9 +200,9 @@ class EntityPlacement {
             
             if (keepSpawning === true) {
                 var instanceUUID = UUID.NewUUID().ToString();
-                MW_Entity_LoadEntity(entityPlacementComponent.entityType, instanceUUID, entityPlacementComponent.entityIndex, entityPlacementComponent.variantIndex,
-                    entityPlacementComponent.entityID, entityPlacementComponent.variantID, entityPlacementComponent.modelPath, null, entityPlacementComponent.modelOffset,
-                    entityPlacementComponent.placingOffset, entityPlacementComponent.modelRotation, null);
+                MW_Entity_LoadEntity(instanceUUID, "instance", entityPlacementComponent.entityID,
+                    entityPlacementComponent.variantID, entityPlacementComponent.placingOffset,
+                    entityPlacementComponent.modelRotation, Vector3.one, true, null);
             }
 
             Context.DefineContext("ENTITY_PLACEMENT_COMPONENT", entityPlacementComponent);

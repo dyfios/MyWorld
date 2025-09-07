@@ -3,103 +3,401 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visit World</title>
+  <title>Visit World - WH Search Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* World Visit Specific Styles */
+    .world-section {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      min-height: 100vh;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      padding-top: 100px; /* Account for fixed header */
+    }
+    
+    .world-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="400" cy="700" r="120" fill="url(%23a)"/></svg>') no-repeat center center;
+      background-size: cover;
+      opacity: 0.3;
+    }
+    
+    .world-title {
+      font-size: 3rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .world-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .world-iframe-container {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    
+    .world-iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: 20px;
+    }
+    
+    .world-toolbar {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 0 0 20px 20px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: none;
+    }
+    
+    .toolbar-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    
+    .webverse-link {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 1rem 2rem;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-bottom: 2rem;
+    }
+    
+    .webverse-link:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      color: white;
+    }
+    
+    .upload-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      overflow: hidden;
+      padding-bottom: 79px; /* Account for fixed footer */
+    }
+    
+    .accordion-item {
+      background: transparent;
+      border: none;
+    }
+    
+    .accordion-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 1.5rem;
+      border-radius: 20px 20px 0 0;
+    }
+    
+    .accordion-button:not(.collapsed) {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      box-shadow: none;
+    }
+    
+    .accordion-button:focus {
+      box-shadow: none;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .accordion-body {
+      background: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+    }
+    
+    .form-label {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    
+    .form-control {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: #333;
+    }
+    
+    .form-control:focus {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(103, 126, 234, 0.5);
+      box-shadow: 0 0 0 0.2rem rgba(103, 126, 234, 0.25);
+      color: #333;
+    }
+    
+    .btn-outline-secondary {
+      border-color: rgba(255, 255, 255, 0.5);
+      color: white;
+    }
+    
+    .btn-outline-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.8);
+      color: white;
+    }
+    
+    /* Dark mode adjustments */
+    body.dark-mode .world-section {
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    }
+    
+    body.dark-mode .world-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    
+    body.dark-mode .form-control {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    
+    body.dark-mode .form-control:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(187, 134, 252, 0.5);
+      box-shadow: 0 0 0 0.2rem rgba(187, 134, 252, 0.25);
+      color: white;
+    }
+    
+    body.dark-mode .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .world-title {
+        font-size: 2rem;
+      }
+      
+      .world-iframe {
+        height: 400px;
+      }
+      
+      .world-section {
+        padding-top: 80px;
+      }
+    }
+    
+    /* Floating elements */
+    .floating-elements {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    
+    .floating-world {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.1);
+      animation: float 8s ease-in-out infinite;
+    }
+    
+    .floating-world:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
+    .floating-world:nth-child(2) { top: 25%; right: 15%; animation-delay: 3s; }
+    .floating-world:nth-child(3) { bottom: 35%; left: 20%; animation-delay: 6s; }
+    .floating-world:nth-child(4) { bottom: 15%; right: 10%; animation-delay: 2s; }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(180deg); }
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
+  <!-- Header Navigation -->
+  <nav class="navbar navbar-expand-lg" id="header">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">
-        <img src="logo.png" alt="Logo" style="height:40px;">
+      <a class="navbar-brand fw-bold animated-gradient-text" href="/">
+        <i class="fas fa-globe-americas me-2"></i>WH Search Engine
       </a>
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Explore</a></li>
-        <li class="nav-item"><a class="nav-link" href="myworlds.html">Create</a></li>
+        <li class="nav-item">
+          <a class="nav-link modern-hover" href="index.html">
+            <i class="fas fa-search me-1"></i>Explore
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link modern-hover" href="https://myworlds.worldhub.me" target="_blank">
+            <i class="fas fa-globe me-1"></i>My Worlds
+          </a>
+        </li>
       </ul>
-      <div class="d-flex align-items-center">
-        <button class="btn btn-outline-secondary me-3" id="themeToggle">ðŸŒ™</button>
+      <div class="d-flex align-items-center gap-2">
         <div class="dropdown">
-          <button class="btn btn-light rounded-circle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="user-icon.png" alt="User Icon" style="height:40px;">
+          <button class="btn btn-outline-info modern-hover rounded-circle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px;">
+            <i class="fas fa-user"></i>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-            <li><a class="dropdown-item" href="#">My Account</a></li>
-            <li><a class="dropdown-item" href="#">Appearance</a></li>
+          <ul class="dropdown-menu dropdown-menu-end glass-container" aria-labelledby="userMenu">
+            <li><a class="dropdown-item modern-hover" href="#"><i class="fas fa-user-circle me-2"></i>My Account</a></li>
+            <li><a class="dropdown-item modern-hover" href="#"><i class="fas fa-paint-brush me-2"></i>Appearance</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item modern-hover" href="#" id="themeToggle"><i class="fas fa-moon me-2"></i>Toggle Dark/Light Mode</a></li>
           </ul>
         </div>
       </div>
     </div>
   </nav>
   
-  <!-- World Visit Content -->
-  <div class="container-fluid mt-4">
-    <!-- World Title -->
-    <div class="row">
-      <div class="col-12">
-        <h1 id="worldTitle" class="text-center mb-4">World Name</h1>
-      </div>
+  <!-- World Visit Section -->
+  <section class="world-section">
+    <div class="floating-elements">
+      <i class="fas fa-globe floating-world" style="font-size: 4rem;"></i>
+      <i class="fas fa-satellite floating-world" style="font-size: 3rem;"></i>
+      <i class="fas fa-rocket floating-world" style="font-size: 3.5rem;"></i>
+      <i class="fas fa-planet-mars floating-world" style="font-size: 2.8rem;"></i>
     </div>
     
-    <!-- IFrame and Toolbar -->
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-10">
-        <!-- IFrame -->
-        <div class="world-iframe-container mb-0">
-          <iframe id="worldIframe" src="about:blank" class="world-iframe" frameborder="0"></iframe>
-        </div>
-        
-        <!-- Toolbar -->
-        <div class="world-toolbar">
-          <span class="toolbar-label">WebVerse Lite</span>
-          <button class="btn btn-outline-secondary btn-sm" id="fullscreenBtn" onclick="toggleFullscreen()">
-            <i class="fas fa-expand"></i>
-          </button>
+    <div class="container">
+      <!-- World Title -->
+      <div class="row">
+        <div class="col-12">
+          <h1 id="worldTitle" class="world-title">World Name</h1>
         </div>
       </div>
-    </div>
-    
-    <!-- Link and Upload Section -->
-    <div class="row justify-content-center mt-4">
-      <div class="col-12 col-lg-10">
-        <!-- Try WebVerse Link -->
-        <div class="text-center mb-4">
-          <a href="#" class="text-decoration-none">Try WebVerse on your PC</a>
-        </div>
-        
-        <!-- Upload Entities Section -->
-        <div class="accordion" id="uploadAccordion">
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="uploadHeading">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#uploadCollapse" aria-expanded="false" aria-controls="uploadCollapse">
-                Upload Entities
+      
+      <!-- World Container -->
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+          <div class="world-container">
+            <!-- IFrame and Toolbar -->
+            <div class="world-iframe-container">
+              <iframe id="worldIframe" src="about:blank" class="world-iframe" frameborder="0"></iframe>
+            </div>
+            
+            <!-- Toolbar -->
+            <div class="world-toolbar">
+              <span class="toolbar-label">
+                <i class="fas fa-cube me-2"></i>WebVerse Lite
+              </span>
+              <button class="btn btn-outline-light btn-sm modern-hover" id="fullscreenBtn" onclick="toggleFullscreen()">
+                <i class="fas fa-expand me-1"></i>Fullscreen
               </button>
-            </h2>
-            <div id="uploadCollapse" class="accordion-collapse collapse" aria-labelledby="uploadHeading" data-bs-parent="#uploadAccordion">
-              <div class="accordion-body">
-                <div class="row">
-                  <div class="col-12 col-md-6">
-                    <!-- File Picker -->
-                    <div class="mb-3">
-                      <label for="fileInput" class="form-label">File</label>
-                      <div class="input-group">
-                        <input type="text" class="form-control" id="filePathDisplay" readonly placeholder="No file selected">
-                        <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('fileInput').click()">...</button>
-                        <input type="file" id="fileInput" style="display: none;" onchange="updateFilePath()">
+            </div>
+            
+            <!-- Try WebVerse Link -->
+            <div class="text-center mt-4">
+              <a href="#" class="webverse-link modern-hover">
+                <i class="fas fa-download me-2"></i>Try WebVerse on your PC
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Upload Entities Section -->
+      <div class="row justify-content-center mt-4">
+        <div class="col-12 col-lg-10">
+          <div class="upload-section">
+            <div class="accordion" id="uploadAccordion">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="uploadHeading">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#uploadCollapse" aria-expanded="false" aria-controls="uploadCollapse">
+                    <i class="fas fa-upload me-2"></i>Upload Entities
+                  </button>
+                </h2>
+                <div id="uploadCollapse" class="accordion-collapse collapse" aria-labelledby="uploadHeading" data-bs-parent="#uploadAccordion">
+                  <div class="accordion-body">
+                    <div class="row">
+                      <div class="col-12 col-md-8">
+                        <!-- File Picker -->
+                        <div class="mb-4">
+                          <label for="fileInput" class="form-label">
+                            <i class="fas fa-file me-2"></i>Select File
+                          </label>
+                          <div class="input-group">
+                            <input type="text" class="form-control" id="filePathDisplay" readonly placeholder="No file selected">
+                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('fileInput').click()">
+                              <i class="fas fa-folder-open"></i>
+                            </button>
+                            <input type="file" id="fileInput" style="display: none;" onchange="updateFilePath()">
+                          </div>
+                        </div>
+                        
+                        <!-- Name Field -->
+                        <div class="mb-4">
+                          <label for="entityName" class="form-label">
+                            <i class="fas fa-tag me-2"></i>Entity Name
+                          </label>
+                          <input type="text" class="form-control" id="entityName" placeholder="Enter entity name">
+                        </div>
+                        
+                        <!-- Create Button -->
+                        <div class="mb-3">
+                          <button type="button" class="btn btn-primary btn-lg modern-hover" onclick="createEntity()">
+                            <i class="fas fa-plus me-2"></i>Create Entity
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <!-- Name Field -->
-                    <div class="mb-3">
-                      <label for="entityName" class="form-label">Name</label>
-                      <input type="text" class="form-control" id="entityName" placeholder="Enter entity name">
-                    </div>
-                    
-                    <!-- Create Button -->
-                    <div class="mb-3">
-                      <button type="button" class="btn btn-primary" onclick="createEntity()">Create</button>
+                      <div class="col-12 col-md-4">
+                        <!-- Upload Info -->
+                        <div class="upload-info">
+                          <h6 class="text-white-50 mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Upload Tips
+                          </h6>
+                          <ul class="list-unstyled text-white-50 small">
+                            <li class="mb-2"><i class="fas fa-check me-2 text-success"></i>Supported formats: .glb, .gltf, .fbx</li>
+                            <li class="mb-2"><i class="fas fa-check me-2 text-success"></i>Max file size: 50MB</li>
+                            <li class="mb-2"><i class="fas fa-check me-2 text-success"></i>Textures will be preserved</li>
+                            <li class="mb-2"><i class="fas fa-check me-2 text-success"></i>Animations supported</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -109,10 +407,113 @@
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="position-fixed bottom-0 start-0 end-0 text-center py-2" style="background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); color: rgba(255, 255, 255, 0.7); z-index: 1000; font-size: 0.85rem;">
+    <div class="container">
+      <p class="mb-1">© 2025 Five Squared Interactive. All rights reserved.</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="#" class="text-light text-decoration-none opacity-75"><i class="fas fa-shield-alt me-1"></i>Privacy</a>
+        <a href="#" class="text-light text-decoration-none opacity-75"><i class="fas fa-file-contract me-1"></i>Terms</a>
+        <a href="#" class="text-light text-decoration-none opacity-75"><i class="fas fa-info-circle me-1"></i>About</a>
+      </div>
+    </div>
+  </footer>
   
+  <!-- Footer Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="scripts.js"></script>
+  <script src="theme-manager.js"></script>
   <script src="visitworld.js"></script>
+  <script>
+    // Initialize world visit functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up fullscreen functionality
+      window.toggleFullscreen = function() {
+        const iframe = document.getElementById('worldIframe');
+        const container = iframe.parentElement;
+        const btn = document.getElementById('fullscreenBtn');
+        
+        if (!document.fullscreenElement) {
+          container.requestFullscreen().then(() => {
+            btn.innerHTML = '<i class="fas fa-compress me-1"></i>Exit Fullscreen';
+            iframe.style.height = '100vh';
+          }).catch(err => {
+            console.log('Error attempting to enable fullscreen:', err);
+          });
+        } else {
+          document.exitFullscreen().then(() => {
+            btn.innerHTML = '<i class="fas fa-expand me-1"></i>Fullscreen';
+            iframe.style.height = '600px';
+          });
+        }
+      };
+      
+      // Set up file path display
+      window.updateFilePath = function() {
+        const fileInput = document.getElementById('fileInput');
+        const display = document.getElementById('filePathDisplay');
+        
+        if (fileInput.files.length > 0) {
+          display.value = fileInput.files[0].name;
+        } else {
+          display.value = 'No file selected';
+        }
+      };
+      
+      // Set up entity creation
+      window.createEntity = function() {
+        const fileInput = document.getElementById('fileInput');
+        const entityName = document.getElementById('entityName');
+        
+        if (!fileInput.files.length) {
+          alert('Please select a file first.');
+          return;
+        }
+        
+        if (!entityName.value.trim()) {
+          alert('Please enter an entity name.');
+          return;
+        }
+        
+        // Here you would implement the actual entity creation logic
+        console.log('Creating entity:', {
+          file: fileInput.files[0],
+          name: entityName.value.trim()
+        });
+        
+        // Show success message
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Created!';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-primary');
+        
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.classList.remove('btn-success');
+          btn.classList.add('btn-primary');
+          entityName.value = '';
+          fileInput.value = '';
+          updateFilePath();
+        }, 2000);
+      };
+      
+      // Load world data from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const worldId = urlParams.get('id');
+      const worldName = urlParams.get('name');
+      
+      if (worldName) {
+        document.getElementById('worldTitle').textContent = decodeURIComponent(worldName);
+      }
+      
+      if (worldId) {
+        // Load the world in the iframe
+        // This would typically load from your world service
+        console.log('Loading world ID:', worldId);
+      }
+    });
+  </script>
 </body>
 </html>

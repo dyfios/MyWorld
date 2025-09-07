@@ -4,17 +4,24 @@ const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
 const vosapp = require("../VOS/vosapp");
+const https = require('https');
+const fs = require('fs');
+
 const app = express();
 const upload = multer();
+
+const httpsServer = https.createServer({
+  key: fs.readFileSync('private.key'),
+  cert: fs.readFileSync('certificate.crt'),
+}, app);
 
 const pendingResponses = new Map();
 const { v4: uuidv4 } = require("uuid");
 
-app.use(express.json());
+app.use(express.json({ limit: "1gb" }));
 
 // Enable CORS for all routes and origins
 app.use(cors());
-
 
 function ConnectToVOS(context) {
     context.vosApp.ConnectToVOS("worldapi", () => {
@@ -516,7 +523,7 @@ app.post("/copy-world", (req, res) => {
 // POST /add-asset (with file upload)
 app.post("/add-asset", upload.single("file-buffer"), (req, res) => {
     if (validateParams(req, res, ["world-id", "file-name", "user-id", "user-token"])) return;
-    if (!req.file || !req.file.buffer) {
+    if (!req.body["file-buffer"]) {
         return res.status(400).json({ error: "Missing or invalid 'file-buffer'" });
     }
     const correlationId = uuidv4();
@@ -526,7 +533,7 @@ app.post("/add-asset", upload.single("file-buffer"), (req, res) => {
         "correlationid": correlationId,
         "worldid": req.body["world-id"],
         "filename": req.body["file-name"],
-        "filebuffer": req.file.buffer.toString("base64"),
+        "filebuffer": req.body["file-buffer"].toString("base64"),
         "userid": req.body["user-id"],
         "usertoken": req.body["user-token"]
     }));
@@ -726,11 +733,14 @@ app.post("/create-entity-template", (req, res) => {
     }
     const correlationId = uuidv4();
     pendingResponses.set(correlationId, res);
+    const templateData = req.body["template-data"];
+    templateData["entity_id"] = uuidv4();
+    templateData["variant_id"] = uuidv4();
     this.vosApp.PublishOnVOS("vos/app/world/createentitytemplate", JSON.stringify({
         "replytopic": "vos/app/wapi/res/createentitytemplate",
         "correlationid": correlationId,
         "worldid": req.body["world-id"],
-        "templatedata": req.body["template-data"],
+        "templatedata": templateData,
         "userid": req.body["user-id"],
         "usertoken": req.body["user-token"]
     }));
@@ -794,6 +804,6 @@ ConnectToVOS(this);
 
 // Start server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+httpsServer.listen(PORT, () => {
     console.log(`🚀 Web Wide Worlds API listening on port ${PORT}`);
 });

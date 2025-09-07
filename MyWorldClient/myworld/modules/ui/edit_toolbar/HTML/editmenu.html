@@ -95,6 +95,46 @@
                 overflow-y: auto;
             }
 
+            .menu-layout {
+                display: flex;
+                height: 100%;
+            }
+
+            .menu-tabs {
+                width: 120px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tab-button {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 10px;
+                text-align: left;
+                font-weight: bold;
+                cursor: pointer;
+                color: black;
+                border-radius: 5px;
+            }
+
+            .tab-button.selected {
+                background: rgba(255, 255, 255, 0.5);
+            }
+
+            .menu-content {
+                flex: 1;
+                padding-left: 20px;
+                overflow-y: auto;
+            }
+
+            .menu-page {
+                display: none;
+            }
+            .menu-page.active {
+                display: block;
+            }
+
             /* Search Bar and Checkbox - Sticky Position */
             .menu-header {
                 position: sticky;
@@ -171,6 +211,33 @@
         <div class="bottom-label" id="buttonLabel"></div>
 
         <div class="menu" id="menu">
+            <div class="menu-layout">
+                <!-- Tabs -->
+                <div class="menu-tabs" id="menuTabs">
+                <button class="tab-button" data-target="toolPage">Tools</button>
+                <button class="tab-button" data-target="entitiesPage">Entities</button>
+                <button class="tab-button" data-target="settingsPage">Settings</button>
+                </div>
+
+                <!-- Content Pages -->
+                <div class="menu-content">
+
+                <div class="menu-page" id="toolPage">
+                    <div class="menu-header">
+                        <input type="text" class="form-control search-bar" id="searchBar" placeholder="Find...">
+                        <label class="grid-checkbox">
+                        <input type="checkbox" id="gridCheckbox" onclick="ToggleGrid();"> Grid
+                        </label>
+                    </div>
+                    <div class="grid-container" id="menuGridContainer"></div>
+                </div>
+                <div class="menu-page" id="entitiesPage" style="display: none;"></div>
+                <div class="menu-page" id="settingsPage" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!--<div class="menu" id="menu">
             <div class="menu-header">
                 <input type="text" class="form-control search-bar" id="searchBar" placeholder="Find...">
                 <label class="grid-checkbox">
@@ -179,7 +246,7 @@
             </div>
 
             <div class="grid-container" id="menuGridContainer"></div>
-        </div>
+        </div>-->
 
         <!-- Console Menu -->
     <div class="console" id="console">
@@ -191,6 +258,7 @@
     </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="assets/scripts//mainmenu.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        <script src="assets/scripts/mainmenu.js"></script>
     </body>
 </html>

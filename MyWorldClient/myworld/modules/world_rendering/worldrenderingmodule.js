@@ -13,7 +13,7 @@ class WorldRenderingModule {
     }
 }
 
-function MW_Rend_OnEntitiesReceived(entityInfo) {
+function MW_Rend_OnEntitiesReceived(entityInfo) {Logging.Log(entityInfo);
     var worldRenderingModule = Context.GetContext("WORLD_RENDERING_MODULE");
     var configModule = Context.GetContext("CONFIGURATION_MODULE");
 
