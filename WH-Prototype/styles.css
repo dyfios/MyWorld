@@ -1305,3 +1305,7 @@ body.dark-mode .form-select:focus {
   -webkit-backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
+
+.banner-logo {
+  max-width: 239px;
+}
