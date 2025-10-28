@@ -16,57 +16,90 @@ function checkAuthorization(userId, userToken, authCallback, action) {
 
 // 🏗️ Create a new world
 async function createWorld(name, description, owner, permissions, userId, userToken, authCallback, onComplete) {
-    try {
-        checkAuthorization(userId, userToken, authCallback, "create a world");
+  try {
+    checkAuthorization(userId, userToken, authCallback, "create a world");
 
-        const worldId = uuidv4();
-        const worldPath = path.join(BASE_PATH, worldId);
+    const worldId = uuidv4();
+    const worldPath = path.join(BASE_PATH, worldId);
 
-        await fs.ensureDir(worldPath);
-        await fs.ensureDir(path.join(worldPath, "assets"));
+    await fs.ensureDir(worldPath);
+    await fs.ensureDir(path.join(worldPath, "assets"));
 
-        const dbPath = path.join(worldPath, "world.db");
-        const db = new sqlite3.Database(dbPath);
+    const dbPath = path.join(worldPath, "world.db");
+    const db = new sqlite3.Database(dbPath);
 
-        await new Promise((resolve, reject) => {
-            db.serialize(() => {
-                db.run(`
-                    CREATE TABLE IF NOT EXISTS world_metadata (
-                        id TEXT PRIMARY KEY, name TEXT, description TEXT, owner TEXT, permissions TEXT
-                    )
-                `);
-                db.run(`
-                    INSERT INTO world_metadata (id, name, description, owner, permissions)
-                    VALUES (?, ?, ?, ?, ?)
-                `, [worldId, name, description, owner, permissions]);
-            });
-            db.run(`
-            CREATE TABLE IF NOT EXISTS entity_instances (
-                instanceid TEXT PRIMARY KEY, instancetag TEXT,
-                entity_id TEXT, variant_id TEXT, entity_parent TEXT,
-                pos_x REAL, pos_y REAL, pos_z REAL,
-                rot_x REAL, rot_y REAL, rot_z REAL, rot_w REAL,
-                scl_x REAL, scl_y REAL, scl_z REAL,
-                state TEXT, owner TEXT,
-                owner_read INTEGER, owner_write INTEGER, owner_use INTEGER, owner_take INTEGER,
-                other_read INTEGER, other_write INTEGER, other_use INTEGER, other_take INTEGER
-            )
+    await new Promise((resolve, reject) => {
+      db.serialize(() => {
+        db.run(`
+          CREATE TABLE IF NOT EXISTS world_metadata (
+            id TEXT PRIMARY KEY, name TEXT, description TEXT, owner TEXT, permissions TEXT
+          )
         `);
         db.run(`
-            CREATE TABLE IF NOT EXISTS entity_templates (
-                entity_id TEXT PRIMARY KEY, entity_tag TEXT,
-                variant_id TEXT, variant_tag TEXT,
-                type TEXT, assets TEXT, scripts TEXT
-            )
+          INSERT INTO world_metadata (id, name, description, owner, permissions)
+          VALUES (?, ?, ?, ?, ?)
+        `, [worldId, name, description, owner, permissions]);
+
+        db.run(`
+          CREATE TABLE IF NOT EXISTS entity_instances (
+            instanceid TEXT PRIMARY KEY, instancetag TEXT,
+            entity_id TEXT, variant_id TEXT, entity_parent TEXT,
+            pos_x REAL, pos_y REAL, pos_z REAL,
+            rot_x REAL, rot_y REAL, rot_z REAL, rot_w REAL,
+            scl_x REAL, scl_y REAL, scl_z REAL,
+            state TEXT, owner TEXT,
+            owner_read INTEGER, owner_write INTEGER, owner_use INTEGER, owner_take INTEGER,
+            other_read INTEGER, other_write INTEGER, other_use INTEGER, other_take INTEGER
+          )
         `);
-        console.log(`✅ World ${worldId} created successfully.`);
-        db.close();
-        onComplete(worldId);
+        db.run(`
+          CREATE TABLE IF NOT EXISTS entity_templates (
+            entity_id TEXT PRIMARY KEY, entity_tag TEXT,
+            variant_id TEXT, variant_tag TEXT,
+            type TEXT, assets TEXT, scripts TEXT
+          )
+        `, (err) => {
+          db.close();
+          if (err) reject(err);
+          else resolve();
         });
-    } catch (error) {
-        console.error("❌ Error creating world:", error);
-        onComplete("");
+      });
+    });
+
+    console.log(`✅ World ${worldId} created successfully. Adding to WorldHub`);
+
+    const listingPayload = {
+      name,
+      description,
+      keywords: ['static'],
+      url: `!!MYWORLDS`,
+      id: worldId
+    };
+
+    try {
+      const response = await fetch('https://www.worldhub.me/api/worlds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(listingPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ Failed to register world with WorldHub: ${response.status} ${errorText}`);
+      } else {
+        console.log(`🌐 World ${worldId} registered with WorldHub`);
+      }
+    } catch (err) {
+      console.error("❌ Error sending POST to WorldHub:", err);
     }
+
+    onComplete(worldId);
+  } catch (error) {
+    console.error("❌ Error creating world:", error);
+    onComplete("");
+  }
 }
 
 // 🗑️ Delete a world

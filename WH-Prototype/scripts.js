@@ -195,7 +195,7 @@ function showWorldPanel(element) {
     document.getElementById('worldTitle').value = worldName;
     document.getElementById('worldThumbnail').src = `world-${worldId}.jpg`;
     document.getElementById('worldThumbnail').alt = `${worldName} Thumbnail`;
-    document.getElementById('worldUrl').value = `https://myworld.com/world/${worldId}`;
+    document.getElementById('worldUrl').value = `https://myworlds.worldhub.me:8081/myworld.veml?world_metadata={%22id%22:%22${encodeURIComponent(worldId)}%22,%22name%22:%22${encodeURIComponent(worldName)}%22,%22description%22:%22${encodeURIComponent(worldDescription || 'A virtual world experience')}%22,%22owner%22:%22%22,%22permissions%22:%22{}%22}%26worlds_server=https://myworlds.worldhub.me:4000`;
     
     // Show the old modal
     const modal = new bootstrap.Modal(oldWorldModal);
@@ -317,7 +317,7 @@ async function createWorld() {
     
     if (response.ok && result.worldid) {
       // Generate world URL using the returned world ID
-      const worldUrl = `https://myworld.com/world/${result.worldid}`;
+      const worldUrl = `https://myworlds.worldhub.me:8081/myworld.veml?world_metadata={%22id%22:%22${encodeURIComponent(world.id)}%22,%22name%22:%22${encodeURIComponent(world.title || world.name)}%22,%22description%22:%22${encodeURIComponent(world.description || 'A virtual world experience')}%22,%22owner%22:%22%22,%22permissions%22:%22{}%22}%26worlds_server=https://myworlds.worldhub.me:4000`;
       
       // Populate the new world modal
       document.getElementById('newWorldUrl').value = worldUrl;
@@ -618,8 +618,13 @@ function animateCounterToDecimal(element, targetValue) {
 // Visit World Functions
 function visitWorld() {
   if (window.currentWorldInfo) {
+    let isWebVerse = window.vuplex != null;
     const { worldId, worldTitle } = window.currentWorldInfo;
-    const visitUrl = `visitworld.html?worldId=${encodeURIComponent(worldId)}&worldName=${encodeURIComponent(worldTitle)}`;
+    let visitUrl = `visitworld.html?worldId=${encodeURIComponent(worldId)}&worldName=${encodeURIComponent(worldTitle)}`;
+    if (isWebVerse) {
+      visitUrl = `https://myworlds.worldhub.me:8081/myworld.veml?world_metadata={%22id%22:%22${encodeURIComponent(worldId)}%22,%22name%22:%22${encodeURIComponent(worldName)}%22,%22description%22:%22${encodeURIComponent(worldDescription || 'A virtual world experience')}%22,%22owner%22:%22%22,%22permissions%22:%22{}%22}%26worlds_server=https://myworlds.worldhub.me:4000`;
+    }
+
     window.open(visitUrl, '_blank');
   }
 }

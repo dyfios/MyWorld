@@ -1,0 +1,27 @@
+<iframe
+  id="auth-frame"
+  src="https://id.worldhub.me/get-credentials.html"
+  style="display:none;"
+></iframe>
+
+<script>
+  // Listen for token from iframe
+  window.addEventListener("message", (event) => {
+    if (event.origin !== "https://id.worldhub.me") return; // Validate source
+
+    const { userID, sessionToken, sessionTokenExpiry } = event.data;
+    if (userID && sessionToken && sessionTokenExpiry) {
+      console.log("? Got session token:", sessionToken);
+      //postWorldMessage("WHID.AUTH.INFO(" + userID + "," + sessionToken + "," + sessionTokenExpiry + ")");
+    }
+    else {
+      console.log("Need to authenticate");
+    }
+  });
+
+  // Request token from iframe when ready
+  const iframe = document.getElementById("auth-frame");
+  iframe.onload = () => {
+    iframe.contentWindow.postMessage({ type: "request-session" }, "https://id.worldhub.me");
+  };
+</script>
