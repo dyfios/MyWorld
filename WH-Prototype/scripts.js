@@ -3,7 +3,6 @@ const API_BASE_URL = 'https://myworlds.worldhub.me:4000';
 const PLACEHOLDER_USER_ID = 'user-placeholder';
 const PLACEHOLDER_USER_TOKEN = 'token-placeholder';
 
-const themeToggle = document.getElementById('themeToggle');
 const header = document.getElementById('header');
 const body = document.body;
 
@@ -15,8 +14,7 @@ let userToken = sessionStorage.getItem("WORLDHUB_ID_TOKEN");
 
 // Initialize page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize theme
-  initializeTheme();
+  // Theme is now managed by theme-manager.js - no need to initialize here
   
   // Initialize worlds grid if we're on myworlds.html
   if (document.querySelector('.worlds-grid') || document.querySelector('.stats-grid')) {
@@ -26,20 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize template selection if we're on a page with create world modal
   initializeTemplateSelection();
 });
-
-// Initialize theme system
-function initializeTheme() {
-  // Check for saved theme preference
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme && body) {
-    body.classList.add(savedTheme);
-    if (savedTheme === 'dark-mode' && header) {
-      header.classList.replace('navbar-light', 'navbar-dark');
-      header.classList.replace('bg-light', 'bg-dark');
-      if (themeToggle) themeToggle.textContent = '??';
-    }
-  }
-}
 
 // Initialize My Worlds page
 function initializeMyWorldsPage() {
@@ -78,28 +62,7 @@ function initializeTemplateSelection() {
   }
 }
 
-// Theme toggle functionality
-if (themeToggle) {
-  themeToggle.addEventListener('click', () => {
-    if (body.classList.contains('dark-mode')) {
-      body.classList.remove('dark-mode');
-      if (header) {
-        header.classList.replace('navbar-dark', 'navbar-light');
-        header.classList.replace('bg-dark', 'bg-light');
-      }
-      themeToggle.textContent = '??';
-      localStorage.setItem('theme', 'light-mode');
-    } else {
-      body.classList.add('dark-mode');
-      if (header) {
-        header.classList.replace('navbar-light', 'navbar-dark');
-        header.classList.replace('bg-light', 'bg-dark');
-      }
-      themeToggle.textContent = '??';
-      localStorage.setItem('theme', 'dark-mode');
-    }
-  });
-}
+// Theme toggle functionality is now handled by theme-manager.js
 
 function showWorldInfo(button) {
     restoreWorldButton();
@@ -756,6 +719,11 @@ async function populateUserIcon() {
         </a>
       `;
       userMenuDropdown.appendChild(themeItem);
+      
+      // Re-setup theme toggle after creating new element
+      if (window.themeManager) {
+        window.themeManager.setupThemeToggles();
+      }
       
       // Handle login click
       document.getElementById('loginBtn').addEventListener('click', function(e) {

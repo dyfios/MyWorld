@@ -782,6 +782,11 @@
           `;
           userMenuDropdown.appendChild(themeItem);
           
+          // Re-setup theme toggle after creating new element
+          if (window.themeManager) {
+            window.themeManager.setupThemeToggles();
+          }
+          
           // Handle login click
           document.getElementById('loginBtn').addEventListener('click', function(e) {
             e.preventDefault();
