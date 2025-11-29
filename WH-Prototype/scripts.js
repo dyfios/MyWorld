@@ -46,14 +46,6 @@ function initializeMyWorldsPage() {
   // Load worlds from API if user is logged in
   if (userID && userToken) {
     loadWorldsFromAPI(userID, userToken);
-  } else {
-    // Create some demo worlds for display
-    const demoWorlds = [
-      { id: 'demo-1', name: 'Forest Paradise', description: 'A lush green world with beautiful trees', template: 'forest' },
-      { id: 'demo-2', name: 'Ocean World', description: 'Endless blue waters and marine life', template: 'ocean' },
-      { id: 'demo-3', name: 'Space Station Alpha', description: 'A futuristic space exploration base', template: 'space' }
-    ];
-    populateWorldButtons(demoWorlds);
   }
   
   // Initialize tooltip if Bootstrap is available
@@ -645,6 +637,138 @@ function visitWorldFromInfo(worldId) {
   window.open(visitUrl, '_blank');
 }
 
+/**
+ * Populate user icon with authenticated user data
+ */
+async function populateUserIcon() {
+  const username = sessionStorage.getItem('WORLDHUB_ID_USERNAME');
+  const token = sessionStorage.getItem('WORLDHUB_ID_TOKEN');
+  const userId = sessionStorage.getItem('WORLDHUB_ID_ID');
+  
+  const userMenuBtn = document.getElementById('userMenu');
+  const userMenuDropdown = document.querySelector('#userMenu + .dropdown-menu');
+
+  if (username && userId) {
+    // User is authenticated - show user icon and info
+    let userIconUrl = null;
+    
+    // Fetch user icon from API
+    try {
+      const response = await fetch(`https://id.worldhub.me:35525/get-user-avatar/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.thumbnailUrl) {
+          userIconUrl = "https://id.worldhub.me:35525" + data.thumbnailUrl;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch user icon:', error);
+    }
+    
+    // Fallback to placeholder with initials if API fails
+    if (!userIconUrl) {
+      console.warn('Could not retrieve user icon.');
+    }
+    
+    // Update user menu button
+    if (userMenuBtn) {
+      userMenuBtn.innerHTML = `
+        <img src="${userIconUrl}" 
+              alt="${username}" 
+              class="rounded-circle" 
+              width="40" 
+              height="40"
+              style="object-fit: cover; display: block; margin: 0 auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+              onerror="this.src='https://via.placeholder.com/40/28a745/ffffff?text=${username.charAt(0).toUpperCase()}'">
+      `;
+      
+      // Update tooltip
+      userMenuBtn.setAttribute('title', `Logged in as ${username}`);
+    }
+    
+    // Update user menu dropdown items
+    if (userMenuDropdown) {
+      // Create smaller version of the icon for dropdown
+      const dropdownIconUrl = userIconUrl.includes('via.placeholder.com') 
+        ? `https://via.placeholder.com/32/28a745/ffffff?text=${username.charAt(0).toUpperCase()}`
+        : userIconUrl;
+      
+      // Add user info to dropdown
+      const userInfo = document.createElement('li');
+      userInfo.innerHTML = `
+        <div class="dropdown-item-text px-3 py-2">
+          <div class="d-flex align-items-center">
+            <img src="${dropdownIconUrl}" 
+                  alt="${username}" 
+                  class="rounded-circle me-2" 
+                  width="32" 
+                  height="32"
+                  style="object-fit: cover;"
+                  onerror="this.src='https://via.placeholder.com/32/28a745/ffffff?text=${username.charAt(0).toUpperCase()}'">
+            <div>
+              <div class="fw-bold" style="color: white;">${username}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Insert at the beginning of the dropdown
+      userMenuDropdown.insertBefore(userInfo, userMenuDropdown.firstChild);
+      
+      // Add divider after user info
+      const divider = document.createElement('li');
+      divider.innerHTML = '<hr class="dropdown-divider">';
+      userMenuDropdown.insertBefore(divider, userMenuDropdown.children[1]);
+    }
+  } else {
+    // User is not authenticated - show default icon and login option
+    if (userMenuBtn) {
+      // Reset button to default icon
+      userMenuBtn.innerHTML = '<i class="fas fa-user"></i>';
+      userMenuBtn.style.position = '';
+      userMenuBtn.style.padding = '';
+      userMenuBtn.style.overflow = '';
+      userMenuBtn.setAttribute('title', 'User Menu');
+    }
+    
+    if (userMenuDropdown) {
+      // Clear existing dropdown content
+      userMenuDropdown.innerHTML = '';
+      
+      // Add login option
+      const loginItem = document.createElement('li');
+      loginItem.innerHTML = `
+        <a class="dropdown-item modern-hover" href="#" id="loginBtn">
+          <i class="fas fa-sign-in-alt me-2"></i>Login
+        </a>
+      `;
+      userMenuDropdown.appendChild(loginItem);
+      
+      // Add divider
+      const divider = document.createElement('li');
+      divider.innerHTML = '<hr class="dropdown-divider">';
+      userMenuDropdown.appendChild(divider);
+      
+      const themeItem = document.createElement('li');
+      themeItem.innerHTML = `
+        <a class="dropdown-item modern-hover" href="#" id="themeToggle">
+          <i class="fas fa-moon me-2"></i>Toggle Dark/Light Mode
+        </a>
+      `;
+      userMenuDropdown.appendChild(themeItem);
+      
+      // Handle login click
+      document.getElementById('loginBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Store the current page as return URL
+        sessionStorage.setItem('loginReturnUrl', window.location.pathname);
+        // Redirect to user login page
+        window.location.href = 'https://myworlds.worldhub.me/login.html';
+      });
+    }
+  }
+}
+
 window.addEventListener("message", (event) => {
   if (event.origin !== "https://id.worldhub.me:35526") return; // Validate sender
 
@@ -658,11 +782,22 @@ window.addEventListener("message", (event) => {
         window.location.href = "https://id.worldhub.me:35526/login?redirect_url=https://myworlds.worldhub.me:8080/myworlds.html";
     }
 
-
+    // Store session info in sessionStorage
+    sessionStorage.setItem("WORLDHUB_ID_ID", userID);
+    sessionStorage.setItem("WORLDHUB_ID_USERNAME", userName);
+    sessionStorage.setItem("WORLDHUB_ID_TOKEN", userToken);
+    sessionStorage.setItem("WORLDHUB_ID_TOKEN_EXPIRY", tokenExpiry);
     // Load worlds from API if on myworlds page
     if (window.location.pathname.includes('myworlds.html')) {
       loadWorldsFromAPI(userID, userToken);
     }
+  } else if (event.data.type === "logout-success") {console.log("Logged out");
+    // Clear session storage on logout
+    sessionStorage.removeItem('WORLDHUB_ID_USERNAME');
+    sessionStorage.removeItem('WORLDHUB_ID_TOKEN');
+    sessionStorage.removeItem('WORLDHUB_ID_ID');
+    sessionStorage.removeItem('WORLDHUB_ID_TOKEN_EXPIRY');
+    window.location.reload();
   }
 });
 

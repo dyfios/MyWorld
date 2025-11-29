@@ -354,7 +354,7 @@ async function updateWorldMetadata(worldId, updateData, userId, userToken, authC
 
 // Helper functions for database operations
 async function queryDatabase(worldId, query) {
-    const dbPath = path.join(BASE_PATH, worldId, "world.db");
+    const dbPath = path.join(BASE_PATH, worldId.replaceAll("\"", ""), "world.db");
     return new Promise((resolve, reject) => {
         const db = new sqlite3.Database(dbPath);
         db.all(query, [], (err, rows) => {

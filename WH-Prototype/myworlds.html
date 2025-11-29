@@ -13,15 +13,20 @@
   <link rel="icon" type="image/x-icon" href="/assets/images/icon.png">
   <style>
     .myworlds-hero {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 50%, #fff3e0 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
-      color: white;
+      color: #1a1a2e;
       position: relative;
       overflow: hidden;
       padding-top: 100px; /* Space for fixed header */
       padding-bottom: 120px; /* Space for fixed footer */
+    }
+    
+    body.dark-mode .myworlds-hero {
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+      color: #ffffff;
     }
     
     .myworlds-hero::before {
@@ -215,10 +220,6 @@
     }
     
     /* Dark mode adjustments */
-    body.dark-mode .myworlds-hero {
-      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-    }
-    
     body.dark-mode .myworlds-container {
       background: rgba(255, 255, 255, 0.05);
       border-color: rgba(255, 255, 255, 0.1);
@@ -512,10 +513,10 @@
       }
       
       // Animate stats on page load
-      setTimeout(() => {
-        animateCounter(document.getElementById('totalWorlds'), 0, 2, 1000);
-        animateCounter(document.getElementById('totalVisits'), 0, 1247, 2000);
-        animateCounter(document.getElementById('activeWorlds'), 0, 2, 1500);
+      /*setTimeout(() => {
+        //animateCounter(document.getElementById('totalWorlds'), 0, 2, 1000);
+        //animateCounter(document.getElementById('totalVisits'), 0, 1247, 2000);
+        //animateCounter(document.getElementById('activeWorlds'), 0, 2, 1500);
         
         // Special handling for decimal rating
         const ratingEl = document.getElementById('avgRating');
@@ -533,7 +534,7 @@
           }
         };
         window.requestAnimationFrame(stepRating);
-      }, 500);
+      }, 500);*/
       
       // Enhanced template selection handler
       const templateSelect = document.getElementById('templateSelect');
@@ -632,7 +633,7 @@
       }
       
       // Animate stats on page load
-      setTimeout(() => {
+      /*setTimeout(() => {
         animateCounter(document.getElementById('totalWorlds'), 0, 2, 1000);
         animateCounter(document.getElementById('totalVisits'), 0, 1247, 2000);
         animateCounter(document.getElementById('activeWorlds'), 0, 2, 1500);
@@ -653,7 +654,7 @@
           }
         };
         window.requestAnimationFrame(stepRating);
-      }, 500);
+      }, 500);*/
       
       // Enhanced template selection handler
       const templateSelect = document.getElementById('templateSelect');
@@ -665,7 +666,7 @@
           
           if (template) {
             // Show template preview (you would load actual template images here)
-            thumbnail.src = `https://via.placeholder.com/300x200/667eea/ffffff?text=${template.charAt(0).toUpperCase() + template.slice(1)}+World`;
+            thumbnail.src = ``;
             thumbnail.style.display = 'block';
             placeholder.style.display = 'none';
           } else {
@@ -756,7 +757,7 @@
         }
         
         // Fallback to placeholder with initials if API fails
-        if (!userIconUrl) {console.log("3");
+        if (!userIconUrl) {
           const userInitial = username.charAt(0).toUpperCase();
           userIconUrl = `https://via.placeholder.com/40/28a745/ffffff?text=${userInitial}`;
         }
@@ -880,9 +881,12 @@
      */
     function handleLogout() {
       // Clear session storage
-      sessionStorage.removeItem('wh_user_username');
-      sessionStorage.removeItem('wh_user_email');
-      sessionStorage.removeItem('wh_user_id');
+      sessionStorage.removeItem('WORLDHUB_ID_ID');
+      sessionStorage.removeItem('WORLDHUB_ID_USERNAME');
+      sessionStorage.removeItem('WORLDHUB_ID_TOKEN');
+      sessionStorage.removeItem('WORLDHUB_ID_TOKEN_EXPIRY');
+      var loginIFrame = document.getElementById("loginiframe");
+      loginIFrame.contentWindow.postMessage({type:"logout"}, "https://id.worldhub.me:35526");
     }
   </script>
 </body>

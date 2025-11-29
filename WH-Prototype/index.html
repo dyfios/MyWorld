@@ -13,36 +13,46 @@
   <link rel="icon" type="image/x-icon" href="/assets/images/icon.png">
   <style>
     .myworlds-hero {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 50%, #fff3e0 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
-      color: white;
+      color: #1a1a2e;
       position: relative;
       overflow: hidden;
       padding-top: 100px; /* Space for fixed header */
       padding-bottom: 120px; /* Space for fixed footer */
     }
     
-    .myworlds-hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 1;
+    body.dark-mode .myworlds-hero {
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+      color: #ffffff;
     }
     
+    /* Light mode title - dark gradient text */
+    .myworlds-title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, #1a1a2e, #667eea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Dark mode title - light gradient text */
+    body.dark-mode .myworlds-title {
+      background: linear-gradient(45deg, #fff, #e3f2fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Light mode container */
     .myworlds-container {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 24px;
       padding: 3rem;
       margin: 2rem auto;
@@ -52,19 +62,16 @@
       max-width: 1200px;
     }
     
+    /* Dark mode container */
+    body.dark-mode .myworlds-container {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    
     .myworlds-header {
       text-align: center;
       margin-bottom: 3rem;
-    }
-    
-    .myworlds-title {
-      font-size: 3rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(45deg, #fff, #e3f2fd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
     }
     
     .myworlds-subtitle {
@@ -80,10 +87,11 @@
       margin-bottom: 2rem;
     }
     
+    /* Light mode card */
     .world-card {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 20px;
       padding: 2rem;
       text-align: center;
@@ -96,6 +104,12 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+    }
+    
+    /* Dark mode card */
+    body.dark-mode .world-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
     .world-card::before {
@@ -114,15 +128,25 @@
     }
     
     .world-card:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.95);
       transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+    
+    body.dark-mode .world-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
     
     .world-card-icon {
       font-size: 3rem;
       margin-bottom: 1rem;
       opacity: 0.8;
+      color: #667eea;
+    }
+    
+    body.dark-mode .world-card-icon {
+      color: inherit;
     }
     
     .world-card-title {
@@ -136,12 +160,24 @@
       opacity: 0.7;
     }
     
+    /* Light mode create card */
     .create-world-card {
+      background: rgba(103, 126, 234, 0.1);
+      border: 2px dashed rgba(103, 126, 234, 0.4);
+    }
+    
+    .create-world-card:hover {
+      background: rgba(103, 126, 234, 0.15);
+      border-color: rgba(103, 126, 234, 0.6);
+    }
+    
+    /* Dark mode create card */
+    body.dark-mode .create-world-card {
       background: rgba(255, 255, 255, 0.15);
       border: 2px dashed rgba(255, 255, 255, 0.4);
     }
     
-    .create-world-card:hover {
+    body.dark-mode .create-world-card:hover {
       background: rgba(255, 255, 255, 0.25);
       border-color: rgba(255, 255, 255, 0.6);
     }
@@ -163,10 +199,15 @@
       z-index: 1;
     }
     
+    /* Light mode floating icons */
     .floating-icon {
       position: absolute;
-      color: rgba(255, 255, 255, 0.1);
+      color: rgba(103, 126, 234, 0.2);
       animation: float 10s ease-in-out infinite;
+    }
+    
+    body.dark-mode .floating-icon {
+      color: rgba(255, 255, 255, 0.1);
     }
     
     .floating-icon:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; font-size: 3rem; }
@@ -204,34 +245,18 @@
     .stat-number {
       font-size: 2rem;
       font-weight: 800;
-      color: #fff;
+      color: #667eea;
       display: block;
+    }
+    
+    body.dark-mode .stat-number {
+      color: #fff;
     }
     
     .stat-label {
       font-size: 0.9rem;
       opacity: 0.7;
       margin-top: 0.25rem;
-    }
-    
-    /* Dark mode adjustments */
-    body.dark-mode .myworlds-hero {
-      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-    }
-    
-    body.dark-mode .myworlds-container {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    }
-    
-    body.dark-mode .world-card {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    body.dark-mode .world-card:hover {
-      background: rgba(255, 255, 255, 0.1);
     }
     
     /* Responsive design */
@@ -510,7 +535,7 @@
       }
       
       // Animate stats on page load
-      setTimeout(() => {
+      /*setTimeout(() => {
         animateCounter(document.getElementById('totalWorlds'), 0, 2, 1000);
         animateCounter(document.getElementById('totalVisits'), 0, 1247, 2000);
         animateCounter(document.getElementById('activeWorlds'), 0, 2, 1500);
@@ -531,7 +556,7 @@
           }
         };
         window.requestAnimationFrame(stepRating);
-      }, 500);
+      }, 500);*/
       
       // Enhanced template selection handler
       const templateSelect = document.getElementById('templateSelect');
@@ -624,8 +649,8 @@
         try {
           const response = await fetch(`https://id.worldhub.me:35525/get-user-avatar/${userId}`);
           if (response.ok) {
-            const data = await response.json();console.log("1");
-            if (data.thumbnailUrl) {console.log("2 " + data.thumbnailUrl);
+            const data = await response.json();
+            if (data.thumbnailUrl) {
               userIconUrl = "https://id.worldhub.me:35525" + data.thumbnailUrl;
             }
           }
