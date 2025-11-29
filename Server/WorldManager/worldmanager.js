@@ -3,9 +3,14 @@
 const fs = require("fs-extra");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
-const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4, validate: uuidValidate } = require("uuid");
 
 const BASE_PATH = "./worlds/";
+
+// Helper function to validate UUID format to prevent path traversal
+function isValidWorldId(worldId) {
+    return typeof worldId === 'string' && uuidValidate(worldId);
+}
 
 // Helper function to check authorization
 function checkAuthorization(userId, userToken, authCallback, action) {
@@ -107,11 +112,30 @@ async function deleteWorld(worldId, userId, userToken, authCallback, onComplete)
     try {
         checkAuthorization(userId, userToken, authCallback, "delete a world");
 
+        // Validate worldId format to prevent path traversal attacks
+        if (!isValidWorldId(worldId)) {
+            throw new Error(`Invalid world ID format: ${worldId}`);
+        }
+
         const worldPath = path.join(BASE_PATH, worldId);
         if (!(await fs.pathExists(worldPath))) throw new Error(`World ${worldId} does not exist.`);
 
+        // Verify ownership before deletion
+        const dbPath = path.join(worldPath, "world.db");
+        if (!(await fs.pathExists(dbPath))) throw new Error(`World ${worldId} database not found.`);
+
+        const metadata = await queryDatabase(worldId, "SELECT owner FROM world_metadata LIMIT 1");
+        if (!metadata || metadata.length === 0) {
+            throw new Error(`World ${worldId} metadata not found.`);
+        }
+
+        const worldOwner = metadata[0].owner;
+        if (worldOwner !== userId) {
+            throw new Error(`User ${userId} is not the owner of world ${worldId}. Only the owner can delete this world.`);
+        }
+
         await fs.remove(worldPath);
-        console.log(`✅ World ${worldId} deleted successfully.`);
+        console.log(`✅ World ${worldId} deleted successfully by owner ${userId}.`);
         onComplete(true);
     } catch (error) {
         console.error(`❌ Error deleting world ${worldId}:`, error);

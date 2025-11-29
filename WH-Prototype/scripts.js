@@ -637,6 +637,83 @@ function visitWorldFromInfo(worldId) {
   window.open(visitUrl, '_blank');
 }
 
+// Delete World Functions
+function confirmDeleteWorld() {
+  if (window.currentWorldInfo) {
+    const { worldTitle } = window.currentWorldInfo;
+    
+    // Update the confirmation modal with world name
+    document.getElementById('deleteWorldName').textContent = worldTitle;
+    
+    // Hide the world details modal
+    const worldModal = bootstrap.Modal.getInstance(document.getElementById('worldModal'));
+    if (worldModal) {
+      worldModal.hide();
+    }
+    
+    // Show the confirmation modal
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteWorldModal'));
+    deleteModal.show();
+  }
+}
+
+async function deleteWorld() {
+  if (!window.currentWorldInfo) {
+    console.error('No world info available for deletion');
+    return;
+  }
+  
+  const { worldId, worldTitle } = window.currentWorldInfo;
+  
+  // Disable the delete button and show loading state
+  const deleteBtn = document.getElementById('confirmDeleteBtn');
+  const originalText = deleteBtn.innerHTML;
+  deleteBtn.disabled = true;
+  deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Deleting...';
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/delete-world`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        'world-id': worldId,
+        'user-id': userID,
+        'user-token': userToken
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.result === true) {
+      // Close the confirmation modal
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteWorldModal'));
+      if (deleteModal) {
+        deleteModal.hide();
+      }
+      
+      // Refresh the worlds list
+      loadWorldsFromAPI(userID, userToken);
+      
+      // Clear the current world info
+      window.currentWorldInfo = null;
+      
+      // Show success feedback (using alert for simplicity, could be enhanced)
+      alert(`World "${worldTitle}" has been deleted successfully.`);
+    } else {
+      alert(`Error deleting world: ${result.error || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error('Error deleting world:', error);
+    alert('Error deleting world. Please check the console for details.');
+  } finally {
+    // Reset the button state
+    deleteBtn.disabled = false;
+    deleteBtn.innerHTML = originalText;
+  }
+}
+
 /**
  * Populate user icon with authenticated user data
  */
