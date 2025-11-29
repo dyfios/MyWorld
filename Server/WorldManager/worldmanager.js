@@ -3,9 +3,14 @@
 const fs = require("fs-extra");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
-const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4, validate: uuidValidate } = require("uuid");
 
 const BASE_PATH = "./worlds/";
+
+// Helper function to validate UUID format to prevent path traversal
+function isValidWorldId(worldId) {
+    return typeof worldId === 'string' && uuidValidate(worldId);
+}
 
 // Helper function to check authorization
 function checkAuthorization(userId, userToken, authCallback, action) {
@@ -106,6 +111,11 @@ async function createWorld(name, description, owner, permissions, userId, userTo
 async function deleteWorld(worldId, userId, userToken, authCallback, onComplete) {
     try {
         checkAuthorization(userId, userToken, authCallback, "delete a world");
+
+        // Validate worldId format to prevent path traversal attacks
+        if (!isValidWorldId(worldId)) {
+            throw new Error(`Invalid world ID format: ${worldId}`);
+        }
 
         const worldPath = path.join(BASE_PATH, worldId);
         if (!(await fs.pathExists(worldPath))) throw new Error(`World ${worldId} does not exist.`);
