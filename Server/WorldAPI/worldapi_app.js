@@ -46,8 +46,14 @@ function ConnectToVOS(context) {
                 if (!res) return; // might’ve timed out or been handled already
 
                 if (deserialized["worldid"] == null || deserialized["worldid"] == "") {
-                    res.status(500).json(deserialized);
-                    context.vosApp.Log("Missing required field worldid in createworld response.");
+                    // Check if there's an error message (e.g., world limit exceeded)
+                    if (deserialized["error"]) {
+                        res.status(403).json({ error: deserialized["error"] });
+                        context.vosApp.Log("World creation denied: " + deserialized["error"]);
+                    } else {
+                        res.status(500).json(deserialized);
+                        context.vosApp.Log("Missing required field worldid in createworld response.");
+                    }
                     return;
                 }
 
@@ -99,9 +105,15 @@ function ConnectToVOS(context) {
                 pendingResponses.delete(correlationId);
                 if (!res) return; // might’ve timed out or been handled already
 
-                if (deserialized["worldid"] == null) {
-                    res.status(500).json(deserialized);
-                    context.vosApp.Log("Missing required field worldid in copyworld response.");
+                if (deserialized["worldid"] == null || deserialized["worldid"] == "") {
+                    // Check if there's an error message (e.g., world limit exceeded)
+                    if (deserialized["error"]) {
+                        res.status(403).json({ error: deserialized["error"] });
+                        context.vosApp.Log("World copy denied: " + deserialized["error"]);
+                    } else {
+                        res.status(500).json(deserialized);
+                        context.vosApp.Log("Missing required field worldid in copyworld response.");
+                    }
                     return;
                 }
 
