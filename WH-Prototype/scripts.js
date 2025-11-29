@@ -16,7 +16,7 @@ let userToken = sessionStorage.getItem("WORLDHUB_ID_TOKEN");
 // Initialize page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize theme
-  initializeTheme();
+//  initializeTheme();
   
   // Initialize worlds grid if we're on myworlds.html
   if (document.querySelector('.worlds-grid') || document.querySelector('.stats-grid')) {
@@ -79,7 +79,7 @@ function initializeTemplateSelection() {
 }
 
 // Theme toggle functionality
-if (themeToggle) {
+/*if (themeToggle) {
   themeToggle.addEventListener('click', () => {
     if (body.classList.contains('dark-mode')) {
       body.classList.remove('dark-mode');
@@ -99,7 +99,7 @@ if (themeToggle) {
       localStorage.setItem('theme', 'dark-mode');
     }
   });
-}
+}*/
 
 function showWorldInfo(button) {
     restoreWorldButton();
@@ -756,6 +756,11 @@ async function populateUserIcon() {
         </a>
       `;
       userMenuDropdown.appendChild(themeItem);
+
+      // Re-setup theme toggle after creating new element
+      if (window.themeManager) {
+        window.themeManager.setupThemeToggles();
+      }
       
       // Handle login click
       document.getElementById('loginBtn').addEventListener('click', function(e) {
