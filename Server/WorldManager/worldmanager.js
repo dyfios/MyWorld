@@ -6,6 +6,7 @@ const sqlite3 = require("sqlite3").verbose();
 const { v4: uuidv4, validate: uuidValidate } = require("uuid");
 
 const BASE_PATH = "./worlds/";
+const MAX_WORLDS_PER_USER = 3;
 
 // Helper function to validate UUID format to prevent path traversal
 function isValidWorldId(worldId) {
@@ -19,10 +20,47 @@ function checkAuthorization(userId, userToken, authCallback, action) {
     }
 }
 
+// Helper function to count worlds owned by a user
+async function countUserWorlds(userId) {
+    if (!(await fs.pathExists(BASE_PATH))) {
+        return 0;
+    }
+
+    const worldFolders = await fs.readdir(BASE_PATH);
+    let count = 0;
+
+    for (const worldId of worldFolders) {
+        const worldPath = path.join(BASE_PATH, worldId);
+        const dbPath = path.join(worldPath, "world.db");
+
+        // Skip if not a valid world directory
+        if (!(await fs.pathExists(dbPath))) continue;
+
+        try {
+            const metadata = await queryDatabase(worldId, "SELECT owner FROM world_metadata LIMIT 1");
+            if (metadata && metadata.length > 0 && metadata[0].owner === userId) {
+                count++;
+            }
+        } catch (dbError) {
+            // Continue processing other worlds
+        }
+    }
+
+    return count;
+}
+
 // 🏗️ Create a new world
 async function createWorld(name, description, owner, permissions, userId, userToken, authCallback, onComplete) {
   try {
     checkAuthorization(userId, userToken, authCallback, "create a world");
+
+    // Check if user has reached the maximum number of worlds
+    const userWorldCount = await countUserWorlds(owner);
+    if (userWorldCount >= MAX_WORLDS_PER_USER) {
+      console.log(`❌ User ${owner} has reached the maximum limit of ${MAX_WORLDS_PER_USER} worlds.`);
+      onComplete("", `World limit exceeded. You cannot create more than ${MAX_WORLDS_PER_USER} worlds.`);
+      return;
+    }
 
     const worldId = uuidv4();
     const worldPath = path.join(BASE_PATH, worldId);
@@ -147,6 +185,14 @@ async function deleteWorld(worldId, userId, userToken, authCallback, onComplete)
 async function copyWorld(existingWorldId, name, description, owner, permissions, userId, userToken, authCallback, onComplete) {
     try {
         checkAuthorization(userId, userToken, authCallback, "copy a world");
+
+        // Check if user has reached the maximum number of worlds
+        const userWorldCount = await countUserWorlds(owner);
+        if (userWorldCount >= MAX_WORLDS_PER_USER) {
+            console.log(`❌ User ${owner} has reached the maximum limit of ${MAX_WORLDS_PER_USER} worlds.`);
+            onComplete("", `World limit exceeded. You cannot create more than ${MAX_WORLDS_PER_USER} worlds.`);
+            return;
+        }
 
         const newWorldId = uuidv4();
         const existingWorldPath = path.join(BASE_PATH, existingWorldId);

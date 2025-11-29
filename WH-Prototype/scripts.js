@@ -2,6 +2,7 @@
 const API_BASE_URL = 'https://myworlds.worldhub.me:4000';
 const PLACEHOLDER_USER_ID = 'user-placeholder';
 const PLACEHOLDER_USER_TOKEN = 'token-placeholder';
+const MAX_WORLDS_PER_USER = 3;
 
 const themeToggle = document.getElementById('themeToggle');
 const header = document.getElementById('header');
@@ -9,6 +10,7 @@ const body = document.body;
 
 let activeWorldInfo = null; // To track the active world-info panel
 let activeWorldInfoButton = null; // To track the active world-info button
+let currentWorldCount = 0; // Track the user's current world count
 
 let userID = sessionStorage.getItem("WORLDHUB_ID_ID");
 let userToken = sessionStorage.getItem("WORLDHUB_ID_TOKEN");
@@ -251,6 +253,9 @@ function visitWorldFromDetails() {
 
 // Create World Modal Functions
 function showCreateWorldPanel() {
+  // Update world limit info before showing the modal
+  updateWorldLimitInfo();
+  
   // Reset form
   document.getElementById('templateSelect').value = '';
   document.getElementById('worldName').value = '';
@@ -261,6 +266,39 @@ function showCreateWorldPanel() {
   // Show the modal
   const modal = new bootstrap.Modal(document.getElementById('createWorldModal'));
   modal.show();
+}
+
+// Update the world limit info message and create button state
+function updateWorldLimitInfo() {
+  const worldLimitInfo = document.getElementById('worldLimitInfo');
+  const createWorldBtn = document.getElementById('createWorldBtn');
+  const alertDiv = worldLimitInfo ? worldLimitInfo.parentElement : null;
+  
+  if (worldLimitInfo) {
+    const remainingWorlds = MAX_WORLDS_PER_USER - currentWorldCount;
+    
+    if (remainingWorlds <= 0) {
+      worldLimitInfo.textContent = `You have reached the maximum limit of ${MAX_WORLDS_PER_USER} worlds. Please delete a world to create a new one.`;
+      if (alertDiv) {
+        alertDiv.classList.remove('alert-info');
+        alertDiv.classList.add('alert-warning');
+      }
+      if (createWorldBtn) {
+        createWorldBtn.disabled = true;
+        createWorldBtn.title = 'World limit reached';
+      }
+    } else {
+      worldLimitInfo.textContent = `You can create up to ${MAX_WORLDS_PER_USER} worlds maximum. You have ${currentWorldCount} world${currentWorldCount !== 1 ? 's' : ''} (${remainingWorlds} remaining).`;
+      if (alertDiv) {
+        alertDiv.classList.remove('alert-warning');
+        alertDiv.classList.add('alert-info');
+      }
+      if (createWorldBtn) {
+        createWorldBtn.disabled = false;
+        createWorldBtn.title = '';
+      }
+    }
+  }
 }
 
 async function createWorld() {
@@ -416,6 +454,12 @@ async function loadWorldsFromAPI(id, token) {
 
 // Populate world buttons based on API data
 function populateWorldButtons(worlds) {
+  // Update the current world count
+  currentWorldCount = worlds.length;
+  
+  // Update the world limit info in the create world modal
+  updateWorldLimitInfo();
+  
   const worldsGrid = document.querySelector('.worlds-grid');
   if (!worldsGrid) {
     // Fallback for old layout if new grid doesn't exist

@@ -72,11 +72,12 @@ function ConnectToVOS(context) {
 
                 worldManager.createWorld(deserialized["name"], deserialized["description"],
                     deserialized["owner"], deserialized["permissions"], deserialized["userid"],
-                    deserialized["usertoken"], null, ((worldID) => {
+                    deserialized["usertoken"], null, ((worldID, errorMessage) => {
                         context.vosApp.PublishOnVOS(deserialized["replytopic"],
                             JSON.stringify({
                                 "correlationid": deserialized["correlationid"],
-                                "worldid": worldID
+                                "worldid": worldID,
+                                "error": errorMessage || null
                             }));
                     }));
             }
@@ -157,11 +158,12 @@ function ConnectToVOS(context) {
 
                 worldManager.copyWorld(deserialized["existingworldid"], deserialized["name"],
                     deserialized["description"], deserialized["owner"], deserialized["permissions"],
-                    deserialized["userid"], deserialized["usertoken"], null, ((worldID) => {
+                    deserialized["userid"], deserialized["usertoken"], null, ((worldID, errorMessage) => {
                         context.vosApp.PublishOnVOS(deserialized["replytopic"],
                             JSON.stringify({
                                 "correlationid": deserialized["correlationid"],
-                                "worldid": worldID
+                                "worldid": worldID,
+                                "error": errorMessage || null
                             }));
                     }));
             }
